@@ -83,6 +83,24 @@ fn test_string() {
 }
 
 #[test]
+fn test_integer() {
+    let pairs = vec![
+        ("0", 0),
+        (" 1", 1),
+        ("0x01 ", 1),
+        ("0x10", 16),
+        ("01 ", 1),
+        (" 010 ", 8),
+    ];
+
+    for (text, expected) in pairs {
+        let parsed = parser::parse_integer(CompleteStr(text));
+
+        assert_eq!(parsed, Ok((CompleteStr(""), expected)));
+    }
+}
+
+#[test]
 fn test_parse() {
     let pairs = vec![
         (r#""""#, hcl_parser::ast::Node::TFString("".to_string())),
@@ -99,6 +117,12 @@ fn test_parse() {
             r#" "this has surrounding whitespace!" "#,
             hcl_parser::ast::Node::TFString("this has surrounding whitespace!".to_string()),
         ),
+        ("0", hcl_parser::ast::Node::TFInteger(0)),
+        (" 1", hcl_parser::ast::Node::TFInteger(1)),
+        ("0x01 ", hcl_parser::ast::Node::TFInteger(1)),
+        ("0x10", hcl_parser::ast::Node::TFInteger(16)),
+        ("01 ", hcl_parser::ast::Node::TFInteger(1)),
+        (" 010 ", hcl_parser::ast::Node::TFInteger(8)),
     ];
 
     for (text, expected) in pairs {
