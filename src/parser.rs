@@ -16,18 +16,22 @@ named!(pub parse_string<CompleteStr, String>,
 );
 
 named!(pub parse_multi_line_comment<CompleteStr, String>,
-       delimited!(
+       preceded!(
            tag!("/*"),
-            map_res!(take_until!("*/"), |s: CompleteStr| { FromStr::from_str(s.0) }),
-            tag!("*/")
+            map_res!(
+                take_until_and_consume!("*/"),
+                |s: CompleteStr| { FromStr::from_str(s.0) }
+            )
         )
 );
 
 named!(pub parse_single_line_comment<CompleteStr, String>,
-       delimited!(
+       preceded!(
            alt!(tag!("//") | tag!("#")),
-            map_res!(take_until!("\n"), |s: CompleteStr| { FromStr::from_str(s.0) }),
-            tag!("\n")
+            map_res!(
+                take_until_and_consume!("\n"),
+                |s: CompleteStr| { FromStr::from_str(s.0) }
+            )
         )
 );
 
