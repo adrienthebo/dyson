@@ -125,6 +125,22 @@ fn test_parse() {
         (" 010 ", hcl_parser::ast::Node::TFInteger(8)),
         ("0.5", hcl_parser::ast::Node::TFFloat(0.5)),
         ("5.5", hcl_parser::ast::Node::TFFloat(5.5)),
+        ("[]", hcl_parser::ast::Node::Array(Vec::new())),
+        (
+            "[1, 01, 0x01]",
+            hcl_parser::ast::Node::Array(vec![
+                hcl_parser::ast::Node::TFInteger(1),
+                hcl_parser::ast::Node::TFInteger(1),
+                hcl_parser::ast::Node::TFInteger(1),
+            ]),
+        ),
+        (
+            r#"[1, "this is a complex type"]"#,
+            hcl_parser::ast::Node::Array(vec![
+                hcl_parser::ast::Node::TFInteger(1),
+                hcl_parser::ast::Node::TFString("this is a complex type".to_string()),
+            ]),
+        ),
     ];
 
     for (text, expected) in pairs {

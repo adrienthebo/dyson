@@ -76,11 +76,20 @@ named!(pub parse_boolean<CompleteStr, bool>,
        )
 );
 
+named!(pub parse_array<CompleteStr, Vec<ast::Node>>,
+       delimited!(
+           char!('['),
+           separated_list!(char!(','), parse),
+           char!(']')
+        )
+);
+
 named!(pub parse<CompleteStr, ast::Node>,
        alt!(
            parse_boolean => { |b| ast::Node::Boolean(b)   } |
            parse_string  => { |s| ast::Node::TFString(s)  } |
            parse_float   => { |f| ast::Node::TFFloat(f)   } |
-           parse_integer => { |i| ast::Node::TFInteger(i) }
+           parse_integer => { |i| ast::Node::TFInteger(i) } |
+           parse_array   => { |v| ast::Node::Array(v)     }
        )
 );
