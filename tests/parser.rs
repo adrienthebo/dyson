@@ -123,6 +123,8 @@ fn test_parse() {
         ("0x10", hcl_parser::ast::Node::TFInteger(16)),
         ("01 ", hcl_parser::ast::Node::TFInteger(1)),
         (" 010 ", hcl_parser::ast::Node::TFInteger(8)),
+        ("0.5", hcl_parser::ast::Node::TFFloat(0.5)),
+        ("5.5", hcl_parser::ast::Node::TFFloat(5.5)),
     ];
 
     for (text, expected) in pairs {
