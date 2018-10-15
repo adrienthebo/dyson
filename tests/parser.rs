@@ -8,7 +8,7 @@ use nom::types::CompleteStr;
 fn test_boolean_true() {
     let text = CompleteStr("true");
 
-    let parsed = parser::parse_boolean(text).expect("Parse failed");
+    let parsed = parser::boolean(text).expect("Parse failed");
     assert_eq!(parsed, (CompleteStr(""), true));
 }
 
@@ -16,7 +16,7 @@ fn test_boolean_true() {
 fn test_boolean_false() {
     let text = CompleteStr("false");
 
-    let parsed = parser::parse_boolean(text).expect("Parse failed");
+    let parsed = parser::boolean(text).expect("Parse failed");
     assert_eq!(parsed, (CompleteStr(""), false));
 }
 
@@ -24,7 +24,7 @@ fn test_boolean_false() {
 fn test_boolean_none() {
     let text = CompleteStr("ish?");
 
-    parser::parse_boolean(text).expect_err("Parse should have failed");
+    parser::boolean(text).expect_err("Parse should have failed");
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn test_single_line_comment() {
     ];
 
     for (text, expected) in pairs {
-        let parsed = parser::parse_single_line_comment(CompleteStr(text));
+        let parsed = parser::single_line_comment(CompleteStr(text));
 
         assert_eq!(parsed, Ok((CompleteStr(""), expected.to_string())));
     }
@@ -54,7 +54,7 @@ fn test_multi_line_comment() {
     ];
 
     for (text, expected) in pairs {
-        let parsed = parser::parse_multi_line_comment(CompleteStr(text));
+        let parsed = parser::multi_line_comment(CompleteStr(text));
 
         assert_eq!(parsed, Ok((CompleteStr(""), expected.to_string())));
     }
@@ -76,7 +76,7 @@ fn test_string() {
     ];
 
     for (text, expected) in pairs {
-        let parsed = parser::parse_string(CompleteStr(text));
+        let parsed = parser::string(CompleteStr(text));
 
         assert_eq!(parsed, Ok((CompleteStr(""), expected.to_string())));
     }
@@ -94,7 +94,7 @@ fn test_integer() {
     ];
 
     for (text, expected) in pairs {
-        let parsed = parser::parse_integer(CompleteStr(text));
+        let parsed = parser::integer(CompleteStr(text));
 
         assert_eq!(parsed, Ok((CompleteStr(""), expected)));
     }
