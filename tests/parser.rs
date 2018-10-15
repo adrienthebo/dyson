@@ -123,8 +123,14 @@ fn test_parse() {
         ("0x10", hcl_parser::ast::Node::TFInteger(16)),
         ("01 ", hcl_parser::ast::Node::TFInteger(1)),
         (" 010 ", hcl_parser::ast::Node::TFInteger(8)),
-        ("0.5", hcl_parser::ast::Node::TFFloat(0.5)),
-        ("5.5", hcl_parser::ast::Node::TFFloat(5.5)),
+        // Exponential notation - integral values
+        ("5e0", hcl_parser::ast::Node::TFFloat(5.0)),
+        ("5e1", hcl_parser::ast::Node::TFFloat(50.0)),
+        // Exponential notation - real coefficient
+        ("5.0e0", hcl_parser::ast::Node::TFFloat(5.0)),
+        ("5.0e1", hcl_parser::ast::Node::TFFloat(50.0)),
+        ("5.5e0", hcl_parser::ast::Node::TFFloat(5.5)),
+        ("5.5e1", hcl_parser::ast::Node::TFFloat(55.0)),
         ("[]", hcl_parser::ast::Node::Array(Vec::new())),
         (
             "[1, 01, 0x01]",
