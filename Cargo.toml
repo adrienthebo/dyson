@@ -5,6 +5,6 @@ authors = ["Adrien Thebo <adrien@lagrange-automation.io>"]
 edition = "2018"
 
 [dependencies]
-nom = "4.0"
+nom = "4.1"
 log = "0.4"
 env_logger = "0.5"
