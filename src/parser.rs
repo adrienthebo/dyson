@@ -3,8 +3,13 @@ use std::str::FromStr;
 
 use super::ast;
 
-named!(pub kvp(CompleteStr) -> String,
-       map!(tag!("abcd"), |s| { s.0.into() })
+named!(pub kvp(CompleteStr) -> (String, String),
+        do_parse!(
+            key: string    >>
+            _eq: ws!(tag!("=")) >>
+            value: string  >>
+            ((key, value))
+        )
 );
 
 named!(pub string(CompleteStr) -> String,
@@ -40,15 +45,19 @@ named!(pub single_line_comment(CompleteStr) -> String,
 );
 
 named!(pub hex_int(CompleteStr) -> i64,
-       map_res!( preceded!(tag!("0x"), nom::hex_digit1), |s:  CompleteStr| {  i64::from_str_radix(s.0, 16) })
+        ws!(
+           map_res!( preceded!(tag!("0x"), nom::hex_digit1), |s:  CompleteStr| {  i64::from_str_radix(s.0, 16) })
+        )
 );
 
 named!(pub oct_int(CompleteStr) -> i64,
-       map_res!( preceded!(tag!("0"), nom::oct_digit1), |s:  CompleteStr| {  i64::from_str_radix(s.0, 8) })
+        ws!(
+            map_res!( preceded!(tag!("0"), nom::oct_digit1), |s:  CompleteStr| {  i64::from_str_radix(s.0, 8) })
+        )
 );
 
 named!(pub dec_int(CompleteStr) -> i64,
-       map_res!(nom::digit1, |s:  CompleteStr| {  i64::from_str_radix(s.0, 10) })
+        ws!(map_res!(nom::digit1, |s:  CompleteStr| {  i64::from_str_radix(s.0, 10) }))
 );
 
 named!(pub integer(CompleteStr) -> i64,
@@ -56,53 +65,64 @@ named!(pub integer(CompleteStr) -> i64,
 );
 
 named!(pub unsigned_float(CompleteStr) -> f32,
-       flat_map!(
-           recognize!(delimited!(nom::digit, char!('.'), nom::digit)),
-           parse_to!(f32)
+        ws!(
+           flat_map!(
+               recognize!(delimited!(nom::digit, char!('.'), nom::digit)),
+               parse_to!(f32)
+            )
         )
 );
 
 named!(pub exp_float(CompleteStr) -> f32,
-       flat_map!(
-           recognize!(
-               delimited!(
-                   alt!(
-                       unsigned_float |
-                       flat_map!(nom::digit, parse_to!(f32))
-                   ),
-                   char!('e'),
-                   nom::digit
-               )
-           ),
-           parse_to!(f32)
-        )
-);
-
-named!(pub float(CompleteStr) -> f32,
-       alt!(exp_float)
-);
-
-named!(pub boolean(CompleteStr) -> bool,
-       alt!(
-           tag!("true")  => { |_| true  } |
-           tag!("false") => { |_| false }
+        ws!(
+           flat_map!(
+               recognize!(
+                   delimited!(
+                       alt!(
+                           unsigned_float |
+                           flat_map!(nom::digit, parse_to!(f32))
+                       ),
+                       char!('e'),
+                       nom::digit
+                   )
+               ),
+               parse_to!(f32)
+            )
        )
 );
 
+named!(pub float(CompleteStr) -> f32,
+       ws!(alt!(exp_float))
+);
+
+named!(pub boolean(CompleteStr) -> bool,
+        ws!(
+           alt!(
+               tag!("true")  => { |_| true  } |
+               tag!("false") => { |_| false }
+           )
+        )
+);
+
 named!(pub array(CompleteStr) -> Vec<ast::Node>,
+    ws!(
        delimited!(
            char!('['),
            separated_list!(char!(','), parse),
            char!(']')
         )
+       )
 );
 
 named!(pub parse(CompleteStr) -> ast::Node,
-       alt!(
-           boolean => { |b| ast::Node::Boolean(b)   } |
-           string  => { |s| ast::Node::TFString(s)  } |
-           float   => { |f| ast::Node::TFFloat(f)   } |
-           integer => { |i| ast::Node::TFInteger(i) } |
-           array   => { |v| ast::Node::Array(v)     }
-       )
+        ws!(
+            alt!(
+                boolean => { |b| ast::Node::Boolean(b)   } |
+                string  => { |s| ast::Node::TFString(s)  } |
+                float   => { |f| ast::Node::TFFloat(f)   } |
+                integer => { |i| ast::Node::TFInteger(i) } |
+                array   => { |v| ast::Node::Array(v)     } |
+                kvp     => { |pair| ast::Node::KeyValue(pair) }
+            )
+        )
 );

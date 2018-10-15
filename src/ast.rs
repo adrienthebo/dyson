@@ -5,4 +5,5 @@ pub enum Node {
     TFFloat(f32),
     Boolean(bool),
     Array(Vec<Node>),
+    KeyValue((String, String)),
 }
