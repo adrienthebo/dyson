@@ -131,7 +131,7 @@ fn test_parse() {
         ("5.0e1", hcl_parser::ast::Node::TFFloat(50.0)),
         ("5.5e0", hcl_parser::ast::Node::TFFloat(5.5)),
         ("5.5e1", hcl_parser::ast::Node::TFFloat(55.0)),
-        ("[]", hcl_parser::ast::Node::Array(Vec::new())),
+        //("[]", hcl_parser::ast::Node::Array(Vec::new())),
         (
             "[1, 01, 0x01]",
             hcl_parser::ast::Node::Array(vec![
@@ -147,6 +147,10 @@ fn test_parse() {
                 hcl_parser::ast::Node::TFString("this is a complex type".to_string()),
             ]),
         ),
+        //(
+        //    r#""hello" = "there""#,
+        //    hcl_parser::ast::Node::KeyValue("hello".to_string(), "there".to_string()),
+        //),
     ];
 
     for (text, expected) in pairs {

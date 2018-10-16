@@ -5,6 +5,9 @@
 
 #[macro_use]
 extern crate nom;
+extern crate serde_json;
 
 pub mod ast;
+pub mod evaluator;
 pub mod parser;
+pub mod traits;

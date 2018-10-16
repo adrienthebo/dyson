@@ -1,15 +1,17 @@
+use super::ast;
 use nom::types::CompleteStr;
+use std::collections::HashMap;
 use std::str::FromStr;
 
-use super::ast;
+pub type ParseResult<'a> = nom::IResult<CompleteStr<'a>, ast::Node>;
 
 named!(pub kvp(CompleteStr) -> (String, String),
-        do_parse!(
+        ws!(do_parse!(
             key: string    >>
             _eq: ws!(tag!("=")) >>
             value: string  >>
             ((key, value))
-        )
+        ))
 );
 
 named!(pub string(CompleteStr) -> String,
@@ -108,21 +110,30 @@ named!(pub array(CompleteStr) -> Vec<ast::Node>,
     ws!(
        delimited!(
            char!('['),
-           separated_list!(char!(','), parse),
+           separated_list!(ws!(char!(',')), parse),
            char!(']')
         )
        )
 );
 
+named!(pub tfmap(CompleteStr) -> ast::Node,
+        do_parse!(
+            pairs: fold_many0!(ws!(kvp), HashMap::new(), |mut acc: HashMap<String, String>, (key, value)| {
+                acc.insert(key, value);
+                acc
+            }) >> ( ast::Node::Object(pairs) )
+        )
+);
+
 named!(pub parse(CompleteStr) -> ast::Node,
         ws!(
             alt!(
-                boolean => { |b| ast::Node::Boolean(b)   } |
-                string  => { |s| ast::Node::TFString(s)  } |
-                float   => { |f| ast::Node::TFFloat(f)   } |
-                integer => { |i| ast::Node::TFInteger(i) } |
-                array   => { |v| ast::Node::Array(v)     } |
-                kvp     => { |pair| ast::Node::KeyValue(pair) }
+                boolean => { |b| ast::Node::Boolean(b)   }                    |
+                string  => { |s| ast::Node::TFString(s)  }                    |
+                float   => { |f| ast::Node::TFFloat(f)   }                    |
+                integer => { |i| ast::Node::TFInteger(i) }                    |
+                array   => { |v| ast::Node::Array(v)     }                    |
+                tfmap   => { |m| m }
             )
         )
 );

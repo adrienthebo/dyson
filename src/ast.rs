@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Debug, PartialEq)]
 pub enum Node {
     TFString(String),
@@ -5,5 +7,6 @@ pub enum Node {
     TFFloat(f32),
     Boolean(bool),
     Array(Vec<Node>),
-    KeyValue((String, String)),
+    KeyValue(String, String),
+    Object(HashMap<String, String>),
 }
