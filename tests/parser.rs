@@ -60,6 +60,22 @@ fn test_multi_line_comment() {
     }
 }
 
+/*
+#[test]
+fn test_bare_string() {
+    let pairs = vec![
+        ("barestring", "barestring".to_string()),
+        ("bare-string", "bare-string".to_string()),
+    ];
+
+    for (text, expected) in pairs {
+        let parsed = parser::bare_string(CompleteStr(text));
+
+        assert_eq!(parsed, Ok((CompleteStr(""), expected.to_string())));
+    }
+}
+*/
+
 #[test]
 fn test_string() {
     let pairs = vec![

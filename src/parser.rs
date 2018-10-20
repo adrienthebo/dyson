@@ -7,9 +7,9 @@ pub type ParseResult<'a> = nom::IResult<CompleteStr<'a>, ast::Node>;
 
 named!(pub kvp(CompleteStr) -> (String, String),
         ws!(do_parse!(
-            key: string    >>
+            key: ws!(string)    >>
             _eq: ws!(tag!("=")) >>
-            value: string  >>
+            value: ws!(string)  >>
             ((key, value))
         ))
 );
@@ -116,16 +116,16 @@ named!(pub array(CompleteStr) -> Vec<ast::Node>,
        )
 );
 
-named!(pub tfmap(CompleteStr) -> ast::Node,
-        do_parse!(
-            pairs: fold_many0!(ws!(kvp), HashMap::new(), |mut acc: HashMap<String, String>, (key, value)| {
-                acc.insert(key, value);
-                acc
-            }) >> ( ast::Node::Object(pairs) )
-        )
+named!(pub object(CompleteStr) -> HashMap<String, ast::Node>,
+        fold_many1!(ws!(kvp), HashMap::new(), |mut acc: HashMap<String, ast::Node>, (key, value)| {
+            println!("{} => {:?}", key, value);
+            acc.insert(key, ast::Node::TFString(value));
+            acc
+        })
 );
 
 named!(pub parse(CompleteStr) -> ast::Node,
+    dbg_dmp!(
         ws!(
             alt!(
                 boolean => { |b| ast::Node::Boolean(b)   }                    |
@@ -133,7 +133,8 @@ named!(pub parse(CompleteStr) -> ast::Node,
                 float   => { |f| ast::Node::TFFloat(f)   }                    |
                 integer => { |i| ast::Node::TFInteger(i) }                    |
                 array   => { |v| ast::Node::Array(v)     }                    |
-                tfmap   => { |m| m }
+                object  => { |o| ast::Node::Object(o) }
             )
         )
+    )
 );

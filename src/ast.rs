@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+pub type Object = HashMap<String, Node>;
+
 #[derive(Debug, PartialEq)]
 pub enum Node {
     TFString(String),
@@ -8,5 +10,5 @@ pub enum Node {
     Boolean(bool),
     Array(Vec<Node>),
     KeyValue(String, String),
-    Object(HashMap<String, String>),
+    Object(Object),
 }

@@ -27,23 +27,23 @@ macro_rules! fixture_tests {
 
 fixture_tests! {
     test_fixture_trivial: ("trivial", true),
-    //test_fixture_assign_deep: ("assign_deep", true),
+    test_fixture_assign_deep: ("assign_deep", true),
     test_fixture_basic: ("basic", true),
-    //test_fixture_basic_int_string: ("basic_int_string", true),
-    //test_fixture_basic_squish: ("basic_squish", true),
+    test_fixture_basic_int_string: ("basic_int_string", true),
+    test_fixture_basic_squish: ("basic_squish", true),
     ////test_fixture_block_assign: ("block_assign", false),
-    //test_fixture_decode_policy: ("decode_policy", true),
-    //test_fixture_decode_tf_variable: ("decode_tf_variable", true),
-    //test_fixture_empty: ("empty", true),
+    test_fixture_decode_policy: ("decode_policy", true),
+    test_fixture_decode_tf_variable: ("decode_tf_variable", true),
+    test_fixture_empty: ("empty", true),
     //test_fixture_escape: ("escape", true),
-    //test_fixture_escape_backslash: ("escape_backslash", true),
-    //test_fixture_flat: ("flat", true),
-    //test_fixture_float: ("float", true),
-    ////test_fixture_git_crypt: ("git_crypt", false),
-    //test_fixture_list_of_lists: ("list_of_lists", true),
-    //test_fixture_list_of_maps: ("list_of_maps", true),
-    //test_fixture_multiline: ("multiline", true),
-    ////test_fixture_multiline_bad: ("multiline_bad", false),
+    test_fixture_escape_backslash: ("escape_backslash", true),
+    test_fixture_flat: ("flat", true),
+    test_fixture_float: ("float", true),
+    //test_fixture_git_crypt: ("git_crypt", false),
+    test_fixture_list_of_lists: ("list_of_lists", true),
+    test_fixture_list_of_maps: ("list_of_maps", true),
+    test_fixture_multiline: ("multiline", true),
+    //test_fixture_multiline_bad: ("multiline_bad", false),
     //test_fixture_multiline_indented: ("multiline_indented", true),
     ////test_fixture_multiline_literal: ("multiline_literal", false),
     //test_fixture_multiline_literal_with_hil: ("multiline_literal_with_hil", true),
@@ -68,10 +68,10 @@ fixture_tests! {
 
 fn test_fixture(case: &str, expect_pass: bool) {
     let mut hcl = String::new();
-    let mut json = String::new();
+    //let mut json = String::new();
 
     let hcl_path = format!("tests/test-fixtures/{}.hcl", case);
-    let json_path = format!("tests/test-fixtures/{}.hcl.json", case);
+    //let json_path = format!("tests/test-fixtures/{}.hcl.json", case);
 
     let path = Path::new(&hcl_path);
     let mut file = File::open(&path).unwrap();
@@ -80,5 +80,6 @@ fn test_fixture(case: &str, expect_pass: bool) {
     let parse_res = parse(CompleteStr(&hcl));
     let ast = parse_res.expect("Unable to parse");
     let eval_res = eval(ast.1);
-    eval_res.expect("Unable to evaluate");
+    let value = eval_res.expect("Unable to evaluate");
+    println!("{:?}", value);
 }
