@@ -5,11 +5,11 @@ use std::str::FromStr;
 
 pub type ParseResult<'a> = nom::IResult<CompleteStr<'a>, ast::Node>;
 
-named!(pub kvp(CompleteStr) -> (String, String),
+named!(pub kvp(CompleteStr) -> (String, ast::Node),
         ws!(do_parse!(
             key: ws!(string)    >>
             _eq: ws!(tag!("=")) >>
-            value: ws!(string)  >>
+            value: ws!(parse)   >>
             ((key, value))
         ))
 );
@@ -119,7 +119,7 @@ named!(pub array(CompleteStr) -> Vec<ast::Node>,
 named!(pub object(CompleteStr) -> HashMap<String, ast::Node>,
         fold_many1!(ws!(kvp), HashMap::new(), |mut acc: HashMap<String, ast::Node>, (key, value)| {
             println!("{} => {:?}", key, value);
-            acc.insert(key, ast::Node::TFString(value));
+            acc.insert(key, value);
             acc
         })
 );
@@ -128,12 +128,12 @@ named!(pub parse(CompleteStr) -> ast::Node,
     dbg_dmp!(
         ws!(
             alt!(
-                boolean => { |b| ast::Node::Boolean(b)   }                    |
-                string  => { |s| ast::Node::TFString(s)  }                    |
-                float   => { |f| ast::Node::TFFloat(f)   }                    |
-                integer => { |i| ast::Node::TFInteger(i) }                    |
-                array   => { |v| ast::Node::Array(v)     }                    |
-                object  => { |o| ast::Node::Object(o) }
+                boolean => { |b| ast::Node::Boolean(b)   }  |
+                string  => { |s| ast::Node::TFString(s)  }  |
+                float   => { |f| ast::Node::TFFloat(f)   }  |
+                integer => { |i| ast::Node::TFInteger(i) }  |
+                array   => { |v| ast::Node::Array(v)     }  |
+                object  => { |o| ast::Node::ObjectList(o) }
             )
         )
     )

@@ -16,11 +16,13 @@ impl From<ast::Node> for JsonValue {
 
                 m.into()
             }
-            ast::Node::Object(m) => {
-                let json_map = m.into_iter().fold(JsonMap::new(), |mut acc, (key, value)| {
-                    acc.insert(key, JsonValue::from(value));
-                    acc
-                });
+            ast::Node::ObjectList(ol) => {
+                let json_map = ol
+                    .into_iter()
+                    .fold(JsonMap::new(), |mut acc, (key, value)| {
+                        acc.insert(key, JsonValue::from(value));
+                        acc
+                    });
 
                 JsonValue::from(json_map)
             }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub type Object = HashMap<String, Node>;
+pub type ObjectList = HashMap<String, Node>;
 
 #[derive(Debug, PartialEq)]
 pub enum Node {
@@ -10,5 +10,5 @@ pub enum Node {
     Boolean(bool),
     Array(Vec<Node>),
     KeyValue(String, String),
-    Object(Object),
+    ObjectList(ObjectList),
 }
