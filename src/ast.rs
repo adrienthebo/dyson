@@ -69,3 +69,45 @@ impl FromStr for NumericLit {
         Ok(NumericLit(f64::from_str(s).unwrap()))
     }
 }
+
+/// [HCL2 configuration file][configuration-file]
+///
+/// [configuration-file]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#configuration-files#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
+pub struct ConfigFile(pub Body);
+
+pub type BodyItems = Vec<BodyItem>;
+
+/// [HCL2 body][body]
+///
+/// [body]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#bodies
+#[derive(Debug, PartialEq, Clone)]
+pub struct Body(pub BodyItems);
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum BodyItem {
+    AttrItem(Attribute),
+    BlockItem(Block),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Attribute {
+    pub ident: Identifier,
+    pub expr: Expression,
+}
+
+pub type BlockLabels = Vec<Identifier>;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Block {
+    pub ident: Identifier,
+    pub labels: BlockLabels,
+    pub body: Body
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Expression {
+    ExprTerm,
+    Operation,
+    Conditional,
+}

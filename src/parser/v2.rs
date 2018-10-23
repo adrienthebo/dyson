@@ -1,7 +1,28 @@
 use ast;
 use nom::types::CompleteStr;
-use nom::{AsChar, IResult, InputTakeAtPosition};
-use std::str::FromStr;
+use nom::{AsChar, IResult, InputTakeAtPosition, FindToken};
+
+pub fn hclsp<'a, T>(input: T) -> IResult<T, T>
+where
+T: InputTakeAtPosition,
+<T as InputTakeAtPosition>::Item: AsChar + Clone,
+&'a str: FindToken<<T as InputTakeAtPosition>::Item>,
+{
+    input.split_at_position(|item| {
+        let ref c = item.as_char();
+        !(c == &' ' || c == &'\t')
+    })
+    //this could be written as followed, but not using FindToken is faster
+    //eat_separator!(input, " \t\r\n")
+}
+
+macro_rules! hclws (
+    ($i:expr, $($args:tt)*) => (
+        {
+            sep!($i, hclsp, $($args)*)
+        }
+    )
+);
 
 named!(pub multi_line_comment(CompleteStr) -> ast::Comment,
     preceded!(
@@ -50,7 +71,7 @@ where
 
 named!(identifier(CompleteStr) -> ast::Identifier,
     flat_map!(
-        recognize!(
+        hclws!(recognize!(
             pair!(
                 verify!(
                     take!(1),
@@ -64,7 +85,7 @@ named!(identifier(CompleteStr) -> ast::Identifier,
                 ),
                 ident_continue
             )
-        ),
+        )),
         parse_to!(ast::Identifier)
     )
 );
@@ -82,9 +103,55 @@ named!(numericlit(CompleteStr) -> ast::NumericLit,
     )
 );
 
+named!(pub attribute(CompleteStr) -> ast::Attribute,
+    map!(
+        separated_pair!(
+            identifier,
+            char!('='),
+            identifier
+        ),
+        |(ident, _expr)| { ast::Attribute { ident, expr: ast::Expression::ExprTerm } }
+    )
+);
+
+named!(pub blocklabels(CompleteStr) -> ast::BlockLabels,
+    many0!(identifier)
+);
+
+named!(pub block(CompleteStr) -> ast::Block,
+    do_parse!(
+        ident: identifier                               >>
+        labels: blocklabels                             >>
+        _bodyopen: pair!(char!('{'), nom::line_ending)  >>
+        inner: body                                     >>
+        _bodyclose: pair!(char!('}'), nom::line_ending) >>
+        (ast::Block { ident, labels, body: inner })
+    )
+);
+
+
+named!(pub bodyitem(CompleteStr) -> ast::BodyItem,
+    alt!(
+        attribute => { |a| ast::BodyItem::AttrItem(a) } |
+        block     => { |b| ast::BodyItem::BlockItem(b) }
+    )
+);
+
+named!(pub body(CompleteStr) -> ast::Body,
+    map!(
+        fold_many0!(bodyitem, ast::BodyItems::new(), |mut acc: ast::BodyItems, it: ast::BodyItem| {
+            acc.push(it);
+            acc
+        }),
+        |v: ast::BodyItems| { ast::Body(v) }
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
+
     #[test]
     fn test_comment() {
         let tests = vec![
@@ -158,6 +225,34 @@ mod tests {
 
         for (text, expected) in tests {
             let actual = numericlit(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_blocklabels() {
+        let tests = vec![
+            ("", ast::BlockLabels::new()),
+            (
+                "ident1",
+                vec![
+                    ast::Identifier("ident1".to_string()),
+                ]
+            ),
+            (
+                "ident1 ident2 ident3",
+                vec![
+                    ast::Identifier("ident1".to_string()),
+                    ast::Identifier("ident2".to_string()),
+                    ast::Identifier("ident3".to_string()),
+                ]
+            )
+        ];
+
+        for (text, expected) in tests {
+            let actual = blocklabels(text.into());
             let (remaining, parsed) = actual.expect("Parse failure");
             assert!(remaining.is_empty());
             assert_eq!(expected, parsed);
