@@ -1,25 +1,27 @@
 use ast;
 use nom::types::CompleteStr;
-use nom::{AsChar, IResult, InputTakeAtPosition, FindToken};
+use nom::{AsChar, IResult, InputTakeAtPosition};
 
-pub fn hclsp<'a, T>(input: T) -> IResult<T, T>
+pub fn hsp<'a, T>(input: T) -> IResult<T, T>
 where
-T: InputTakeAtPosition,
-<T as InputTakeAtPosition>::Item: AsChar + Clone,
-&'a str: FindToken<<T as InputTakeAtPosition>::Item>,
+    T: InputTakeAtPosition,
+    <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-    input.split_at_position(|item| {
-        let ref c = item.as_char();
-        !(c == &' ' || c == &'\t')
-    })
-    //this could be written as followed, but not using FindToken is faster
-    //eat_separator!(input, " \t\r\n")
+    input.split_at_position(|item| !(item.as_char() == ' '))
 }
 
-macro_rules! hclws (
+macro_rules! hws (
     ($i:expr, $($args:tt)*) => (
         {
-            sep!($i, hclsp, $($args)*)
+            match sep!($i, hsp, $($args)*) {
+                Err(e) => Err(e),
+                Ok((i1, o)) => {
+                    match (hsp)(i1) {
+                        Err(e) => Err(Err::convert(e)),
+                        Ok((i2,_))    => Ok((i2, o))
+                    }
+                }
+            }
         }
     )
 );
@@ -60,18 +62,16 @@ where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar,
 {
-    let out = input.split_at_position(
-        |item| {
-            let ch = item.as_char();
-            !(ch.is_xid_continue() || ch == '-')
-        }
-    );
+    let out = input.split_at_position(|item| {
+        let ch = item.as_char();
+        !(ch.is_xid_continue() || ch == '-')
+    });
     out
 }
 
 named!(identifier(CompleteStr) -> ast::Identifier,
     flat_map!(
-        hclws!(recognize!(
+        hws!(recognize!(
             pair!(
                 verify!(
                     take!(1),
@@ -92,11 +92,13 @@ named!(identifier(CompleteStr) -> ast::Identifier,
 
 named!(numericlit(CompleteStr) -> ast::NumericLit,
     flat_map!(
-        recognize!(
-            tuple!(
-                nom::digit,
-                opt!(preceded!(char!('.'), nom::digit)),
-                opt!(preceded!(char!('e'), nom::digit))
+        hws!(
+            recognize!(
+                tuple!(
+                    nom::digit,
+                    opt!(preceded!(char!('.'), nom::digit)),
+                    opt!(preceded!(char!('e'), nom::digit))
+                )
             )
         ),
         parse_to!(ast::NumericLit)
@@ -128,7 +130,6 @@ named!(pub block(CompleteStr) -> ast::Block,
         (ast::Block { ident, labels, body: inner })
     )
 );
-
 
 named!(pub bodyitem(CompleteStr) -> ast::BodyItem,
     alt!(
@@ -203,7 +204,10 @@ mod tests {
             ("I", ast::Identifier("I".to_string())),
             ("i", ast::Identifier("i".to_string())),
             ("_underprefix", ast::Identifier("_underprefix".to_string())),
-            ("__underunderprefix", ast::Identifier("__underunderprefix".to_string())),
+            (
+                "__underunderprefix",
+                ast::Identifier("__underunderprefix".to_string()),
+            ),
         ];
 
         for (text, expected) in tests {
@@ -219,6 +223,9 @@ mod tests {
         let tests = vec![
             ("1", ast::NumericLit(f64::from_str("1").unwrap())),
             ("1.1", ast::NumericLit(f64::from_str("1.1").unwrap())),
+            (" 1.1", ast::NumericLit(f64::from_str("1.1").unwrap())),
+            ("1.1 ", ast::NumericLit(f64::from_str("1.1").unwrap())),
+            (" 1.1 ", ast::NumericLit(f64::from_str("1.1").unwrap())),
             //(".1", ast::NumericLit(f64::from_str(".1").unwrap())),
             ("1.1e5", ast::NumericLit(f64::from_str("1.1e5").unwrap())),
         ];
@@ -235,20 +242,15 @@ mod tests {
     fn test_blocklabels() {
         let tests = vec![
             ("", ast::BlockLabels::new()),
-            (
-                "ident1",
-                vec![
-                    ast::Identifier("ident1".to_string()),
-                ]
-            ),
+            ("ident1", vec![ast::Identifier("ident1".to_string())]),
             (
                 "ident1 ident2 ident3",
                 vec![
                     ast::Identifier("ident1".to_string()),
                     ast::Identifier("ident2".to_string()),
                     ast::Identifier("ident3".to_string()),
-                ]
-            )
+                ],
+            ),
         ];
 
         for (text, expected) in tests {
