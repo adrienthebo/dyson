@@ -181,6 +181,38 @@ named!(pub tuple(CompleteStr) -> ast::Tuple,
     )
 );
 
+named!(pub objectelem(CompleteStr) -> ast::ObjectElem,
+    hws!(
+        do_parse!(
+            key: alt!(
+                identifier => { |i| ast::ObjectKey::Identifier(i) } |
+                expression => { |e| ast::ObjectKey::Expression(e) }
+            ) >>
+            char!('=') >>
+            value: expression >>
+            (ast::ObjectElem { key, value })
+        )
+    )
+);
+
+named!(pub object(CompleteStr) -> ast::Object,
+    hws!(
+        do_parse!(
+            char!('{') >>
+            list: many0!(terminated!(objectelem, char!(','))) >>
+            last: opt!(objectelem) >>
+            char!('}') >>
+            ({
+                let mut list = list;
+                if let Some(item) = last {
+                    list.push(item);
+                }
+                list
+            })
+        )
+    )
+);
+
 named!(pub expression(CompleteStr) -> ast::Expression,
     alt!(
         exprterm => { |et| ast::Expression::ExprTerm(et) }
@@ -193,16 +225,14 @@ named!(pub exprterm(CompleteStr) -> ast::ExprTerm,
     )
 );
 
-/*
 named!(pub collectionvalue(CompleteStr) -> ast::CollectionValue,
     hws!(
         alt!(
-            tuple  => { |t| ast::CollectionValue::Tuple } |
-            object => { |t| ast::CollectionValue::Object }
+            tuple  => { |t| ast::CollectionValue::Tuple(t) } |
+            object => { |o| ast::CollectionValue::Object(o) }
         )
     )
 );
-*/
 
 #[cfg(test)]
 mod tests {
@@ -340,45 +370,101 @@ mod tests {
             ("[]", ast::Tuple::new()),
             (
                 "[true]",
-                vec![
-                    ast::Expression::ExprTerm(
-                        ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::True,
-                        )
-                    )
-                ]
+                vec![ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                    ast::LiteralValue::True,
+                ))],
             ),
             (
                 "[true, false, null, 3.14]",
                 vec![
-                    ast::Expression::ExprTerm(
-                        ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::True,
-                        )
-                    ),
-                    ast::Expression::ExprTerm(
-                        ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::False,
-                        )
-                    ),
-                    ast::Expression::ExprTerm(
-                        ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::Null,
-                        )
-                    ),
-                    ast::Expression::ExprTerm(
-                        ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::NumericLit(
-                                ast::NumericLit(3.14),
-                            )
-                        )
-                    )
-                ]
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::True)),
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                        ast::LiteralValue::False,
+                    )),
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::Null)),
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                        ast::LiteralValue::NumericLit(ast::NumericLit(3.14)),
+                    )),
+                ],
             ),
         ];
 
         for (text, expected) in tests {
             let actual = tuple(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_object() {
+        let tests = vec![
+            ("{}", ast::Object::new()),
+            (
+                "{foo = true, bar = false}",
+                vec![
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::True,
+                        )),
+                    },
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::False,
+                        )),
+                    },
+                ],
+            ),
+        ];
+
+        for (text, expected) in tests {
+            let actual = object(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_collectionvalue() {
+        let tests = vec![
+            ("[]", ast::CollectionValue::Tuple(ast::Tuple::new())),
+            ("{}", ast::CollectionValue::Object(ast::Object::new())),
+            (
+                "[true, false]",
+                ast::CollectionValue::Tuple(vec![
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::True)),
+                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                        ast::LiteralValue::False,
+                    )),
+                ]),
+            ),
+            (
+                "{foo = true, bar = false}",
+                ast::CollectionValue::Object(
+                    vec![
+                        ast::ObjectElem {
+                            key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
+                            value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                                ast::LiteralValue::True,
+                            )),
+                        },
+                        ast::ObjectElem {
+                            key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
+                            value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                                ast::LiteralValue::False,
+                            )),
+                        },
+                    ],
+                )
+            )
+        ];
+
+        for (text, expected) in tests {
+            let actual = collectionvalue(text.into());
             let (remaining, parsed) = actual.expect("Parse failure");
             assert!(remaining.is_empty());
             assert_eq!(expected, parsed);
