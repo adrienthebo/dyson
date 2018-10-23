@@ -163,14 +163,10 @@ fn test_parse() {
                 hcl_parser::ast::Node::TFString("this is a complex type".to_string()),
             ]),
         ),
-        //(
-        //    r#""hello" = "there""#,
-        //    hcl_parser::ast::Node::KeyValue("hello".to_string(), "there".to_string()),
-        //),
     ];
 
     for (text, expected) in pairs {
-        let parsed = parser::parse(CompleteStr(text));
+        let parsed = parser::expr(CompleteStr(text));
 
         assert_eq!(parsed, Ok((CompleteStr(""), expected)));
     }
