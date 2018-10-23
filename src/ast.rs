@@ -111,3 +111,24 @@ pub enum Expression {
     Operation,
     Conditional,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ExprTerm {
+    LiteralValue,
+    //CollectionValue,
+    //TemplateExpr,
+    //VariableExpr,
+    //FunctionCall,
+    //ForExpr,
+    //ExprTerm Index,
+    //ExprTerm GetAttr,
+    //ExprTerm Splat,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum LiteralValue {
+    NumericLit(NumericLit),
+    True,
+    False,
+    Null,
+}

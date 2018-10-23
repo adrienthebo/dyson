@@ -13,6 +13,8 @@ where
 macro_rules! hws (
     ($i:expr, $($args:tt)*) => (
         {
+            use nom::Err;
+            use nom::Convert;
             match sep!($i, hsp, $($args)*) {
                 Err(e) => Err(e),
                 Ok((i1, o)) => {
@@ -71,21 +73,23 @@ where
 
 named!(identifier(CompleteStr) -> ast::Identifier,
     flat_map!(
-        hws!(recognize!(
-            pair!(
-                verify!(
-                    take!(1),
-                    |s: CompleteStr| {
-                        if let Some((_size, ref ch)) = s.char_indices().nth(0) {
-                            ch.is_xid_start() || ch == &'_'
-                        } else {
-                            false
+        hws!(
+            recognize!(
+                pair!(
+                    verify!(
+                        take!(1),
+                        |s: CompleteStr| {
+                            if let Some((_size, ref ch)) = s.char_indices().nth(0) {
+                                ch.is_xid_start() || ch == &'_'
+                            } else {
+                                false
+                            }
                         }
-                    }
-                ),
-                ident_continue
+                    ),
+                    ident_continue
+                )
             )
-        )),
+        ),
         parse_to!(ast::Identifier)
     )
 );
@@ -145,6 +149,17 @@ named!(pub body(CompleteStr) -> ast::Body,
             acc
         }),
         |v: ast::BodyItems| { ast::Body(v) }
+    )
+);
+
+named!(pub literalvalue(CompleteStr) -> ast::LiteralValue,
+    hws!(
+        alt!(
+            numericlit    => { |nl| ast::LiteralValue::NumericLit(nl) } |
+            tag!("true")  => { |_| ast::LiteralValue::True } |
+            tag!("false") => { |_| ast::LiteralValue::False } |
+            tag!("null")  => { |_| ast::LiteralValue::Null }
+        )
     )
 );
 
@@ -255,6 +270,23 @@ mod tests {
 
         for (text, expected) in tests {
             let actual = blocklabels(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_literalvalue() {
+        let tests = vec![
+            ("true", ast::LiteralValue::True),
+            ("false", ast::LiteralValue::False),
+            ("null", ast::LiteralValue::Null),
+            ("3.14", ast::LiteralValue::NumericLit(ast::NumericLit(3.14))),
+        ];
+
+        for (text, expected) in tests {
+            let actual = literalvalue(text.into());
             let (remaining, parsed) = actual.expect("Parse failure");
             assert!(remaining.is_empty());
             assert_eq!(expected, parsed);
