@@ -114,9 +114,9 @@ named!(pub attribute(CompleteStr) -> ast::Attribute,
         separated_pair!(
             identifier,
             char!('='),
-            identifier
+            expression
         ),
-        |(ident, _expr)| { ast::Attribute { ident, expr: ast::Expression::ExprTerm } }
+        |(ident, expr)| { ast::Attribute { ident, expr } }
     )
 );
 
@@ -162,6 +162,47 @@ named!(pub literalvalue(CompleteStr) -> ast::LiteralValue,
         )
     )
 );
+
+named!(pub tuple(CompleteStr) -> ast::Tuple,
+    hws!(
+        do_parse!(
+            char!('[') >>
+            list: many0!(terminated!(expression, char!(','))) >>
+            last: opt!(expression) >>
+            char!(']') >>
+            ({
+                let mut list = list;
+                if let Some(item) = last {
+                    list.push(item);
+                }
+                list
+            })
+        )
+    )
+);
+
+named!(pub expression(CompleteStr) -> ast::Expression,
+    alt!(
+        exprterm => { |et| ast::Expression::ExprTerm(et) }
+    )
+);
+
+named!(pub exprterm(CompleteStr) -> ast::ExprTerm,
+    alt!(
+        literalvalue => { |lv| ast::ExprTerm::LiteralValue(lv) }
+    )
+);
+
+/*
+named!(pub collectionvalue(CompleteStr) -> ast::CollectionValue,
+    hws!(
+        alt!(
+            tuple  => { |t| ast::CollectionValue::Tuple } |
+            object => { |t| ast::CollectionValue::Object }
+        )
+    )
+);
+*/
 
 #[cfg(test)]
 mod tests {
@@ -287,6 +328,57 @@ mod tests {
 
         for (text, expected) in tests {
             let actual = literalvalue(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_tuple() {
+        let tests = vec![
+            ("[]", ast::Tuple::new()),
+            (
+                "[true]",
+                vec![
+                    ast::Expression::ExprTerm(
+                        ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::True,
+                        )
+                    )
+                ]
+            ),
+            (
+                "[true, false, null, 3.14]",
+                vec![
+                    ast::Expression::ExprTerm(
+                        ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::True,
+                        )
+                    ),
+                    ast::Expression::ExprTerm(
+                        ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::False,
+                        )
+                    ),
+                    ast::Expression::ExprTerm(
+                        ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::Null,
+                        )
+                    ),
+                    ast::Expression::ExprTerm(
+                        ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::NumericLit(
+                                ast::NumericLit(3.14),
+                            )
+                        )
+                    )
+                ]
+            ),
+        ];
+
+        for (text, expected) in tests {
+            let actual = tuple(text.into());
             let (remaining, parsed) = actual.expect("Parse failure");
             assert!(remaining.is_empty());
             assert_eq!(expected, parsed);

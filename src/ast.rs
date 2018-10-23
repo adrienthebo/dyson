@@ -107,14 +107,14 @@ pub struct Block {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
-    ExprTerm,
+    ExprTerm(ExprTerm),
     Operation,
     Conditional,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ExprTerm {
-    LiteralValue,
+    LiteralValue(LiteralValue),
     //CollectionValue,
     //TemplateExpr,
     //VariableExpr,
@@ -131,4 +131,26 @@ pub enum LiteralValue {
     True,
     False,
     Null,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum CollectionValue {
+    Tuple(Tuple),
+    Object(Object),
+}
+
+pub type Tuple = Vec<Expression>;
+
+pub type Object = Vec<ObjectElem>;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ObjectElem {
+    pub key: ObjectKey,
+    pub value: Expression,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ObjectKey {
+    Identifier(Identifier),
+    Expression(Expression)
 }
