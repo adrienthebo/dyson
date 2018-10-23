@@ -17,12 +17,6 @@ pub enum Node {
     //Comment(Comment),
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Comment(pub String);
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Identifier(pub String);
-
 #[derive(Debug)]
 pub struct ParseAstError;
 
@@ -38,6 +32,14 @@ impl Error for ParseAstError {
     }
 }
 
+/// [HCL2 Comment][comment-spec]
+///
+/// [comment-spec]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#comments-and-whitespace
+///
+///
+#[derive(Debug, PartialEq, Clone)]
+pub struct Comment(pub String);
+
 impl FromStr for Comment {
     type Err = ParseAstError;
 
@@ -46,11 +48,24 @@ impl FromStr for Comment {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Identifier(pub String);
+
 impl FromStr for Identifier {
     type Err = ParseAstError;
 
     fn from_str(s: &str) -> Result<Identifier, Self::Err> {
-        println!("HO HO HO I'M CONVERTING AN IDENTIFIER");
         Ok(Identifier(s.into()))
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct NumericLit(pub f64);
+
+impl FromStr for NumericLit {
+    type Err = ParseAstError;
+
+    fn from_str(s: &str) -> Result<NumericLit, Self::Err> {
+        Ok(NumericLit(f64::from_str(s).unwrap()))
     }
 }
