@@ -166,10 +166,10 @@ named!(pub literalvalue(CompleteStr) -> ast::LiteralValue,
 named!(pub tuple(CompleteStr) -> ast::Tuple,
     hws!(
         do_parse!(
-            char!('[') >>
+            char!('[')                                        >>
             list: many0!(terminated!(expression, char!(','))) >>
-            last: opt!(expression) >>
-            char!(']') >>
+            last: opt!(expression)                            >>
+            char!(']')                                        >>
             ({
                 let mut list = list;
                 if let Some(item) = last {
@@ -187,8 +187,8 @@ named!(pub objectelem(CompleteStr) -> ast::ObjectElem,
             key: alt!(
                 identifier => { |i| ast::ObjectKey::Identifier(i) } |
                 expression => { |e| ast::ObjectKey::Expression(e) }
-            ) >>
-            char!('=') >>
+            )                 >>
+            char!('=')        >>
             value: expression >>
             (ast::ObjectElem { key, value })
         )
@@ -198,10 +198,10 @@ named!(pub objectelem(CompleteStr) -> ast::ObjectElem,
 named!(pub object(CompleteStr) -> ast::Object,
     hws!(
         do_parse!(
-            char!('{') >>
+            char!('{')                                        >>
             list: many0!(terminated!(objectelem, char!(','))) >>
-            last: opt!(objectelem) >>
-            char!('}') >>
+            last: opt!(objectelem)                            >>
+            char!('}')                                        >>
             ({
                 let mut list = list;
                 if let Some(item) = last {
