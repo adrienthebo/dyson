@@ -1,4 +1,4 @@
-use ast;
+use ast::*;
 use nom::types::CompleteStr;
 use nom::{AsChar, IResult, InputTakeAtPosition};
 
@@ -28,26 +28,26 @@ macro_rules! hws (
     )
 );
 
-named!(pub multi_line_comment(CompleteStr) -> ast::Comment,
+named!(pub multi_line_comment(CompleteStr) -> Comment,
     preceded!(
         tag!("/*"),
         flat_map!(
             take_until_and_consume!("*/"),
-            parse_to!(ast::Comment)
+            parse_to!(Comment)
         )
     )
 );
 
-named!(pub single_line_comment(CompleteStr) -> ast::Comment,
+named!(pub single_line_comment(CompleteStr) -> Comment,
     do_parse!(
         _prefix: alt!(tag!("#") | tag!("//"))        >>
         s: take_till!(|ch| ch == '\r' || ch == '\n') >>
         _suffix: opt!(call!(nom::line_ending))       >>
-        (ast::Comment(s.to_string()))
+        (Comment(s.to_string()))
     )
 );
 
-named!(pub comment(CompleteStr) -> ast::Comment,
+named!(pub comment(CompleteStr) -> Comment,
     alt!(multi_line_comment | single_line_comment)
 );
 
@@ -71,7 +71,7 @@ where
     out
 }
 
-named!(identifier(CompleteStr) -> ast::Identifier,
+named!(identifier(CompleteStr) -> Identifier,
     flat_map!(
         hws!(
             recognize!(
@@ -90,11 +90,11 @@ named!(identifier(CompleteStr) -> ast::Identifier,
                 )
             )
         ),
-        parse_to!(ast::Identifier)
+        parse_to!(Identifier)
     )
 );
 
-named!(numericlit(CompleteStr) -> ast::NumericLit,
+named!(numericlit(CompleteStr) -> NumericLit,
     flat_map!(
         hws!(
             recognize!(
@@ -105,65 +105,65 @@ named!(numericlit(CompleteStr) -> ast::NumericLit,
                 )
             )
         ),
-        parse_to!(ast::NumericLit)
+        parse_to!(NumericLit)
     )
 );
 
-named!(pub attribute(CompleteStr) -> ast::Attribute,
+named!(pub attribute(CompleteStr) -> Attribute,
     map!(
         separated_pair!(
             identifier,
             char!('='),
             expression
         ),
-        |(ident, expr)| { ast::Attribute { ident, expr } }
+        |(ident, expr)| { Attribute { ident, expr } }
     )
 );
 
-named!(pub blocklabels(CompleteStr) -> ast::BlockLabels,
+named!(pub blocklabels(CompleteStr) -> BlockLabels,
     many0!(identifier)
 );
 
-named!(pub block(CompleteStr) -> ast::Block,
+named!(pub block(CompleteStr) -> Block,
     do_parse!(
         ident: identifier                               >>
         labels: blocklabels                             >>
         _bodyopen: pair!(char!('{'), nom::line_ending)  >>
         inner: body                                     >>
         _bodyclose: pair!(char!('}'), nom::line_ending) >>
-        (ast::Block { ident, labels, body: inner })
+        (Block { ident, labels, body: inner })
     )
 );
 
-named!(pub bodyitem(CompleteStr) -> ast::BodyItem,
+named!(pub bodyitem(CompleteStr) -> BodyItem,
     alt!(
-        attribute => { |a| ast::BodyItem::AttrItem(a) } |
-        block     => { |b| ast::BodyItem::BlockItem(b) }
+        attribute => { |a| BodyItem::AttrItem(a) } |
+        block     => { |b| BodyItem::BlockItem(b) }
     )
 );
 
-named!(pub body(CompleteStr) -> ast::Body,
+named!(pub body(CompleteStr) -> Body,
     map!(
-        fold_many0!(bodyitem, ast::BodyItems::new(), |mut acc: ast::BodyItems, it: ast::BodyItem| {
+        fold_many0!(bodyitem, BodyItems::new(), |mut acc: BodyItems, it: BodyItem| {
             acc.push(it);
             acc
         }),
-        |v: ast::BodyItems| { ast::Body(v) }
+        |v: BodyItems| { Body(v) }
     )
 );
 
-named!(pub literalvalue(CompleteStr) -> ast::LiteralValue,
+named!(pub literalvalue(CompleteStr) -> LiteralValue,
     hws!(
         alt!(
-            numericlit    => { |nl| ast::LiteralValue::NumericLit(nl) } |
-            tag!("true")  => { |_| ast::LiteralValue::True } |
-            tag!("false") => { |_| ast::LiteralValue::False } |
-            tag!("null")  => { |_| ast::LiteralValue::Null }
+            numericlit    => { |nl| LiteralValue::NumericLit(nl) } |
+            tag!("true")  => { |_| LiteralValue::True } |
+            tag!("false") => { |_| LiteralValue::False } |
+            tag!("null")  => { |_| LiteralValue::Null }
         )
     )
 );
 
-named!(pub tuple(CompleteStr) -> ast::Tuple,
+named!(pub tuple(CompleteStr) -> Tuple,
     hws!(
         do_parse!(
             char!('[')                                        >>
@@ -181,21 +181,21 @@ named!(pub tuple(CompleteStr) -> ast::Tuple,
     )
 );
 
-named!(pub objectelem(CompleteStr) -> ast::ObjectElem,
+named!(pub objectelem(CompleteStr) -> ObjectElem,
     hws!(
         do_parse!(
             key: alt!(
-                identifier => { |i| ast::ObjectKey::Identifier(i) } |
-                expression => { |e| ast::ObjectKey::Expression(e) }
+                identifier => { |i| ObjectKey::Identifier(i) } |
+                expression => { |e| ObjectKey::Expression(e) }
             )                 >>
             char!('=')        >>
             value: expression >>
-            (ast::ObjectElem { key, value })
+            (ObjectElem { key, value })
         )
     )
 );
 
-named!(pub object(CompleteStr) -> ast::Object,
+named!(pub object(CompleteStr) -> Object,
     hws!(
         do_parse!(
             char!('{')                                        >>
@@ -213,29 +213,29 @@ named!(pub object(CompleteStr) -> ast::Object,
     )
 );
 
-named!(pub expression(CompleteStr) -> ast::Expression,
+named!(pub expression(CompleteStr) -> Expression,
     alt!(
-        exprterm => { |et| ast::Expression::ExprTerm(et) }
+        exprterm => { |et| Expression::ExprTerm(et) }
     )
 );
 
-named!(pub exprterm(CompleteStr) -> ast::ExprTerm,
+named!(pub exprterm(CompleteStr) -> ExprTerm,
     alt!(
-        literalvalue    => { |lv| ast::ExprTerm::LiteralValue(lv) } |
-        collectionvalue => { |cv| ast::ExprTerm::CollectionValue(cv) }
+        literalvalue    => { |lv| ExprTerm::LiteralValue(lv) } |
+        collectionvalue => { |cv| ExprTerm::CollectionValue(cv) }
     )
 );
 
-named!(pub collectionvalue(CompleteStr) -> ast::CollectionValue,
+named!(pub collectionvalue(CompleteStr) -> CollectionValue,
     hws!(
         alt!(
-            tuple  => { |t| ast::CollectionValue::Tuple(t) } |
-            object => { |o| ast::CollectionValue::Object(o) }
+            tuple  => { |t| CollectionValue::Tuple(t) } |
+            object => { |o| CollectionValue::Object(o) }
         )
     )
 );
 
-named!(pub quoted_template(CompleteStr) -> ast::TemplateExpr,
+named!(pub quoted_template(CompleteStr) -> TemplateExpr,
     hws!(
         flat_map!(
             delimited!(
@@ -243,13 +243,13 @@ named!(pub quoted_template(CompleteStr) -> ast::TemplateExpr,
                 take_until!(r#"""#),
                 char!('"')
             ),
-            parse_to!(ast::TemplateExpr)
+            parse_to!(TemplateExpr)
         )
     )
 );
 
 /// todo: implement template trimming
-named!(pub heredoc_template(CompleteStr) -> ast::TemplateExpr,
+named!(pub heredoc_template(CompleteStr) -> TemplateExpr,
     hws!(
         do_parse!(
             tag!("<<")                   >>
@@ -257,16 +257,16 @@ named!(pub heredoc_template(CompleteStr) -> ast::TemplateExpr,
             ident: identifier            >>
             call!(nom::line_ending)      >>
             s: take_until!(&ident.0[..]) >>
-            (ast::TemplateExpr(s.to_string()))
+            (TemplateExpr(s.to_string()))
         )
     )
 );
 
-named!(pub template_expr(CompleteStr) -> ast::TemplateExpr,
+named!(pub template_expr(CompleteStr) -> TemplateExpr,
     alt!(quoted_template | heredoc_template)
 );
 
-named!(pub stringlit(CompleteStr) -> ast::StringLit,
+named!(pub stringlit(CompleteStr) -> StringLit,
     hws!(
         delimited!(
             char!('"'),
@@ -280,7 +280,7 @@ named!(pub stringlit(CompleteStr) -> ast::StringLit,
                         tag!("n")  => { |_| &"\n"[..] }
                     )
                 ),
-                |s: String| { ast::StringLit(s) }
+                |s: String| { StringLit(s) }
             ),
             char!('"')
         )
@@ -297,23 +297,23 @@ mod tests {
         let tests = vec![
             (
                 "# This is a single line comment\r\n",
-                ast::Comment(" This is a single line comment".to_string()),
+                Comment(" This is a single line comment".to_string()),
             ),
             (
                 "// This is a single line comment\r\n",
-                ast::Comment(" This is a single line comment".to_string()),
+                Comment(" This is a single line comment".to_string()),
             ),
             (
                 "// This is a single line comment\n",
-                ast::Comment(" This is a single line comment".to_string()),
+                Comment(" This is a single line comment".to_string()),
             ),
             (
                 "// This is a single line comment",
-                ast::Comment(" This is a single line comment".to_string()),
+                Comment(" This is a single line comment".to_string()),
             ),
             (
                 "/* This is a multi\n line\r\n comment */",
-                ast::Comment(" This is a multi\n line\r\n comment ".to_string()),
+                Comment(" This is a multi\n line\r\n comment ".to_string()),
             ),
         ];
 
@@ -328,24 +328,24 @@ mod tests {
     #[test]
     fn test_identifier() {
         let tests = vec![
-            ("ident", ast::Identifier("ident".to_string())),
-            ("kebab-case", ast::Identifier("kebab-case".to_string())),
-            ("snake_case", ast::Identifier("snake_case".to_string())),
+            ("ident", Identifier("ident".to_string())),
+            ("kebab-case", Identifier("kebab-case".to_string())),
+            ("snake_case", Identifier("snake_case".to_string())),
             (
                 "SCREAMING_SNAKE_CASE",
-                ast::Identifier("SCREAMING_SNAKE_CASE".to_string()),
+                Identifier("SCREAMING_SNAKE_CASE".to_string()),
             ),
-            ("CamelCase", ast::Identifier("CamelCase".to_string())),
+            ("CamelCase", Identifier("CamelCase".to_string())),
             (
                 "Irate_Camel_Case",
-                ast::Identifier("Irate_Camel_Case".to_string()),
+                Identifier("Irate_Camel_Case".to_string()),
             ),
-            ("I", ast::Identifier("I".to_string())),
-            ("i", ast::Identifier("i".to_string())),
-            ("_underprefix", ast::Identifier("_underprefix".to_string())),
+            ("I", Identifier("I".to_string())),
+            ("i", Identifier("i".to_string())),
+            ("_underprefix", Identifier("_underprefix".to_string())),
             (
                 "__underunderprefix",
-                ast::Identifier("__underunderprefix".to_string()),
+                Identifier("__underunderprefix".to_string()),
             ),
         ];
 
@@ -360,13 +360,13 @@ mod tests {
     #[test]
     fn test_numericlit() {
         let tests = vec![
-            ("1", ast::NumericLit(f64::from_str("1").unwrap())),
-            ("1.1", ast::NumericLit(f64::from_str("1.1").unwrap())),
-            (" 1.1", ast::NumericLit(f64::from_str("1.1").unwrap())),
-            ("1.1 ", ast::NumericLit(f64::from_str("1.1").unwrap())),
-            (" 1.1 ", ast::NumericLit(f64::from_str("1.1").unwrap())),
-            //(".1", ast::NumericLit(f64::from_str(".1").unwrap())),
-            ("1.1e5", ast::NumericLit(f64::from_str("1.1e5").unwrap())),
+            ("1", NumericLit(f64::from_str("1").unwrap())),
+            ("1.1", NumericLit(f64::from_str("1.1").unwrap())),
+            (" 1.1", NumericLit(f64::from_str("1.1").unwrap())),
+            ("1.1 ", NumericLit(f64::from_str("1.1").unwrap())),
+            (" 1.1 ", NumericLit(f64::from_str("1.1").unwrap())),
+            //(".1", NumericLit(f64::from_str(".1").unwrap())),
+            ("1.1e5", NumericLit(f64::from_str("1.1e5").unwrap())),
         ];
 
         for (text, expected) in tests {
@@ -380,14 +380,14 @@ mod tests {
     #[test]
     fn test_blocklabels() {
         let tests = vec![
-            ("", ast::BlockLabels::new()),
-            ("ident1", vec![ast::Identifier("ident1".to_string())]),
+            ("", BlockLabels::new()),
+            ("ident1", vec![Identifier("ident1".to_string())]),
             (
                 "ident1 ident2 ident3",
                 vec![
-                    ast::Identifier("ident1".to_string()),
-                    ast::Identifier("ident2".to_string()),
-                    ast::Identifier("ident3".to_string()),
+                    Identifier("ident1".to_string()),
+                    Identifier("ident2".to_string()),
+                    Identifier("ident3".to_string()),
                 ],
             ),
         ];
@@ -404,18 +404,14 @@ mod tests {
     fn test_exprterm() {
         let tests = vec![(
             "{foo = true, bar = false}",
-            ast::ExprTerm::CollectionValue(ast::CollectionValue::Object(vec![
-                ast::ObjectElem {
-                    key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
-                    value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                        ast::LiteralValue::True,
-                    )),
+            ExprTerm::CollectionValue(CollectionValue::Object(vec![
+                ObjectElem {
+                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
                 },
-                ast::ObjectElem {
-                    key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
-                    value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                        ast::LiteralValue::False,
-                    )),
+                ObjectElem {
+                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                 },
             ])),
         )];
@@ -431,10 +427,10 @@ mod tests {
     #[test]
     fn test_literalvalue() {
         let tests = vec![
-            ("true", ast::LiteralValue::True),
-            ("false", ast::LiteralValue::False),
-            ("null", ast::LiteralValue::Null),
-            ("3.14", ast::LiteralValue::NumericLit(ast::NumericLit(3.14))),
+            ("true", LiteralValue::True),
+            ("false", LiteralValue::False),
+            ("null", LiteralValue::Null),
+            ("3.14", LiteralValue::NumericLit(NumericLit(3.14))),
         ];
 
         for (text, expected) in tests {
@@ -448,24 +444,22 @@ mod tests {
     #[test]
     fn test_tuple() {
         let tests = vec![
-            ("[]", ast::Tuple::new()),
+            ("[]", Tuple::new()),
             (
                 "[true]",
-                vec![ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                    ast::LiteralValue::True,
+                vec![Expression::ExprTerm(ExprTerm::LiteralValue(
+                    LiteralValue::True,
                 ))],
             ),
             (
                 "[true, false, null, 3.14]",
                 vec![
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::True)),
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                        ast::LiteralValue::False,
-                    )),
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::Null)),
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                        ast::LiteralValue::NumericLit(ast::NumericLit(3.14)),
-                    )),
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null)),
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                        NumericLit(3.14),
+                    ))),
                 ],
             ),
         ];
@@ -481,21 +475,17 @@ mod tests {
     #[test]
     fn test_object() {
         let tests = vec![
-            ("{}", ast::Object::new()),
+            ("{}", Object::new()),
             (
                 "{foo = true, bar = false}",
                 vec![
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::True,
-                        )),
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
                     },
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::False,
-                        )),
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                     },
                 ],
             ),
@@ -512,31 +502,25 @@ mod tests {
     #[test]
     fn test_collectionvalue() {
         let tests = vec![
-            ("[]", ast::CollectionValue::Tuple(ast::Tuple::new())),
-            ("{}", ast::CollectionValue::Object(ast::Object::new())),
+            ("[]", CollectionValue::Tuple(Tuple::new())),
+            ("{}", CollectionValue::Object(Object::new())),
             (
                 "[true, false]",
-                ast::CollectionValue::Tuple(vec![
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(ast::LiteralValue::True)),
-                    ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                        ast::LiteralValue::False,
-                    )),
+                CollectionValue::Tuple(vec![
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                 ]),
             ),
             (
                 "{foo = true, bar = false}",
-                ast::CollectionValue::Object(vec![
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::True,
-                        )),
+                CollectionValue::Object(vec![
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
                     },
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::False,
-                        )),
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                     },
                 ]),
             ),
