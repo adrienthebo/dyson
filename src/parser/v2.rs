@@ -221,7 +221,8 @@ named!(pub expression(CompleteStr) -> ast::Expression,
 
 named!(pub exprterm(CompleteStr) -> ast::ExprTerm,
     alt!(
-        literalvalue => { |lv| ast::ExprTerm::LiteralValue(lv) }
+        literalvalue    => { |lv| ast::ExprTerm::LiteralValue(lv) } |
+        collectionvalue => { |cv| ast::ExprTerm::CollectionValue(cv) }
     )
 );
 
@@ -348,6 +349,36 @@ mod tests {
     }
 
     #[test]
+    fn test_exprterm() {
+        let tests = vec![(
+            "{foo = true, bar = false}",
+            ast::ExprTerm::CollectionValue(
+                ast::CollectionValue::Object(vec![
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::True,
+                        )),
+                    },
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::False,
+                        )),
+                    },
+                ]
+            )
+        ))];
+
+        for (text, expected) in tests {
+            let actual = exprterm(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
     fn test_literalvalue() {
         let tests = vec![
             ("true", ast::LiteralValue::True),
@@ -444,23 +475,21 @@ mod tests {
             ),
             (
                 "{foo = true, bar = false}",
-                ast::CollectionValue::Object(
-                    vec![
-                        ast::ObjectElem {
-                            key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
-                            value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                                ast::LiteralValue::True,
-                            )),
-                        },
-                        ast::ObjectElem {
-                            key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
-                            value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                                ast::LiteralValue::False,
-                            )),
-                        },
-                    ],
-                )
-            )
+                ast::CollectionValue::Object(vec![
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::True,
+                        )),
+                    },
+                    ast::ObjectElem {
+                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
+                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                            ast::LiteralValue::False,
+                        )),
+                    },
+                ]),
+            ),
         ];
 
         for (text, expected) in tests {

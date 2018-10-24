@@ -115,7 +115,7 @@ pub enum Expression {
 #[derive(Debug, PartialEq, Clone)]
 pub enum ExprTerm {
     LiteralValue(LiteralValue),
-    //CollectionValue,
+    CollectionValue(CollectionValue),
     //TemplateExpr,
     //VariableExpr,
     //FunctionCall,
