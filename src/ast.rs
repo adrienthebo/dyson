@@ -60,6 +60,17 @@ impl FromStr for Identifier {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct StringLit(pub String);
+
+impl FromStr for StringLit {
+    type Err = ParseAstError;
+
+    fn from_str(s: &str) -> Result<StringLit, Self::Err> {
+        Ok(StringLit(s.into()))
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct NumericLit(pub f64);
 
 impl FromStr for NumericLit {
@@ -154,3 +165,15 @@ pub enum ObjectKey {
     Identifier(Identifier),
     Expression(Expression)
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TemplateExpr(pub String);
+
+impl FromStr for TemplateExpr {
+    type Err = ParseAstError;
+
+    fn from_str(s: &str) -> Result<TemplateExpr, Self::Err> {
+        Ok(TemplateExpr(s.to_string()))
+    }
+}
+

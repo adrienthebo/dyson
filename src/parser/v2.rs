@@ -235,6 +235,58 @@ named!(pub collectionvalue(CompleteStr) -> ast::CollectionValue,
     )
 );
 
+named!(pub quoted_template(CompleteStr) -> ast::TemplateExpr,
+    hws!(
+        flat_map!(
+            delimited!(
+                char!('"'),
+                take_until!(r#"""#),
+                char!('"')
+            ),
+            parse_to!(ast::TemplateExpr)
+        )
+    )
+);
+
+/// todo: implement template trimming
+named!(pub heredoc_template(CompleteStr) -> ast::TemplateExpr,
+    hws!(
+        do_parse!(
+            tag!("<<")                   >>
+            _do_trim: opt!(char!('-'))   >>
+            ident: identifier            >>
+            call!(nom::line_ending)      >>
+            s: take_until!(&ident.0[..]) >>
+            (ast::TemplateExpr(s.to_string()))
+        )
+    )
+);
+
+named!(pub template_expr(CompleteStr) -> ast::TemplateExpr,
+    alt!(quoted_template | heredoc_template)
+);
+
+named!(pub stringlit(CompleteStr) -> ast::StringLit,
+    hws!(
+        delimited!(
+            char!('"'),
+            map!(
+                escaped_transform!(
+                    is_not!("\\\"\n"),
+                    '\\',
+                    alt!(
+                        tag!("\\") => { |_| &"\\"[..] } |
+                        tag!("\"") => { |_| &"\""[..] } |
+                        tag!("n")  => { |_| &"\n"[..] }
+                    )
+                ),
+                |s: String| { ast::StringLit(s) }
+            ),
+            char!('"')
+        )
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -352,23 +404,21 @@ mod tests {
     fn test_exprterm() {
         let tests = vec![(
             "{foo = true, bar = false}",
-            ast::ExprTerm::CollectionValue(
-                ast::CollectionValue::Object(vec![
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::True,
-                        )),
-                    },
-                    ast::ObjectElem {
-                        key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
-                        value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
-                            ast::LiteralValue::False,
-                        )),
-                    },
-                ]
-            )
-        ))];
+            ast::ExprTerm::CollectionValue(ast::CollectionValue::Object(vec![
+                ast::ObjectElem {
+                    key: ast::ObjectKey::Identifier(ast::Identifier("foo".to_string())),
+                    value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                        ast::LiteralValue::True,
+                    )),
+                },
+                ast::ObjectElem {
+                    key: ast::ObjectKey::Identifier(ast::Identifier("bar".to_string())),
+                    value: ast::Expression::ExprTerm(ast::ExprTerm::LiteralValue(
+                        ast::LiteralValue::False,
+                    )),
+                },
+            ])),
+        )];
 
         for (text, expected) in tests {
             let actual = exprterm(text.into());
