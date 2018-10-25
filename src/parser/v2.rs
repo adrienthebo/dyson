@@ -320,6 +320,16 @@ named!(pub functioncall(CompleteStr) -> FunctionCall,
     )
 );
 
+named!(for_cond(CompleteStr) -> ForCond,
+    map!(
+        preceded!(
+            tag!("if"),
+            expression
+        ),
+        |e: Expression| { ForCond(e) }
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -588,4 +598,24 @@ mod tests {
             ),
         ]
     );
+
+    test_production!(
+        test_for_cond,
+        for_cond,
+        vec![
+            (
+                "if true",
+                ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
+                    LiteralValue::True
+                )),)
+            ),
+            (
+                "if false",
+                ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
+                    LiteralValue::False
+                )),)
+            ),
+        ]
+    );
+
 }

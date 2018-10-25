@@ -193,3 +193,6 @@ pub struct FunctionCall {
     pub ident: Identifier,
     pub arguments: Vec<Expression>,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ForCond(pub Expression);
