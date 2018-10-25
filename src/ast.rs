@@ -60,6 +60,17 @@ impl FromStr for Identifier {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct VariableExpr(pub String);
+
+impl FromStr for VariableExpr {
+    type Err = ParseAstError;
+
+    fn from_str(s: &str) -> Result<VariableExpr, Self::Err> {
+        Ok(VariableExpr(s.into()))
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct StringLit(pub String);
 
 impl FromStr for StringLit {
@@ -177,3 +188,8 @@ impl FromStr for TemplateExpr {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct FunctionCall {
+    pub ident: Identifier,
+    pub arguments: Vec<Expression>,
+}

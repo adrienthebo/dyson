@@ -17,10 +17,10 @@ macro_rules! hws (
             use nom::Convert;
             match sep!($i, hsp, $($args)*) {
                 Err(e) => Err(e),
-                Ok((i1, o)) => {
-                    match (hsp)(i1) {
+                Ok((ltrim, o)) => {
+                    match (hsp)(ltrim) {
                         Err(e) => Err(Err::convert(e)),
-                        Ok((i2,_))    => Ok((i2, o))
+                        Ok((ztrim, _)) => Ok((ztrim, o))
                     }
                 }
             }
@@ -91,6 +91,13 @@ named!(identifier(CompleteStr) -> Identifier,
             )
         ),
         parse_to!(Identifier)
+    )
+);
+
+named!(variable(CompleteStr) -> VariableExpr,
+    flat_map!(
+        recognize!(identifier),
+        parse_to!(VariableExpr)
     )
 );
 
@@ -284,6 +291,29 @@ named!(pub stringlit(CompleteStr) -> StringLit,
             ),
             char!('"')
         )
+    )
+);
+
+named!(pub functioncall(CompleteStr) -> FunctionCall,
+    map!(
+        pair!(
+            identifier,
+            delimited!(
+                char!('('),
+                pair!(
+                    many0!(terminated!(expression, char!(','))),
+                    opt!(expression)
+                ),
+                char!(')')
+            )
+        ),
+        |(ident, (rest, last))| {
+            let mut arguments = rest;
+            if let Some(item) = last {
+                arguments.push(item);
+            }
+            FunctionCall { ident, arguments }
+        }
     )
 );
 
@@ -528,6 +558,80 @@ mod tests {
 
         for (text, expected) in tests {
             let actual = collectionvalue(text.into());
+            let (remaining, parsed) = actual.expect("Parse failure");
+            assert!(remaining.is_empty());
+            assert_eq!(expected, parsed);
+        }
+    }
+
+    #[test]
+    fn test_functioncall() {
+        let tests = vec![
+            (
+                "nullary()", FunctionCall {
+                    ident: Identifier("nullary".into()),
+                    arguments: vec![],
+                }
+            ),
+            (
+                "unary(true)", FunctionCall {
+                    ident: Identifier("unary".into()),
+                    arguments: vec![
+                        // Read this type declaration to the tune of yakety sax
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::True
+                            )
+                        )
+                    ],
+                }
+            ),
+            (
+                "binary(true, false)", FunctionCall {
+                    ident: Identifier("binary".into()),
+                    arguments: vec![
+                        // Read this type declaration to the tune of yakety sax
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::True
+                            )
+                        ),
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::False
+                            )
+                        )
+                    ],
+                }
+            ),
+            (
+                "ternary(true, false, null)", FunctionCall {
+                    ident: Identifier("ternary".into()),
+                    arguments: vec![
+                        // Read this type declaration to the tune of yakety sax
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::True
+                            )
+                        ),
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::False
+                            )
+                        ),
+                        Expression::ExprTerm(
+                            ExprTerm::LiteralValue(
+                                LiteralValue::Null
+                            )
+                        )
+                    ],
+                }
+            ),
+        ];
+
+
+        for (text, expected) in tests {
+            let actual = functioncall(text.into());
             let (remaining, parsed) = actual.expect("Parse failure");
             assert!(remaining.is_empty());
             assert_eq!(expected, parsed);
