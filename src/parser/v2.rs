@@ -198,20 +198,23 @@ named!(pub objectelem(CompleteStr) -> ObjectElem,
     )
 );
 
+named!(objectelem_term(CompleteStr) -> CompleteStr,
+    alt!(
+        nom::line_ending |
+        tag!(",") |
+        recognize!(pair!(tag!(","), nom::line_ending))
+    )
+);
+
 named!(pub object(CompleteStr) -> Object,
     hws!(
         do_parse!(
-            char!('{')                                        >>
-            list: many0!(terminated!(objectelem, char!(','))) >>
-            last: opt!(objectelem)                            >>
-            char!('}')                                        >>
-            ({
-                let mut list = list;
-                if let Some(item) = last {
-                    list.push(item);
-                }
-                list
-            })
+            char!('{')                                         >>
+            opt!(nom::line_ending)                             >>
+            list: separated_list!(objectelem_term, objectelem) >>
+            opt!(nom::line_ending)                             >>
+            char!('}')                                         >>
+            (list)
         )
     )
 );
@@ -560,6 +563,45 @@ mod tests {
                     },
                 ],
             ),
+            (
+                "{foo = true\nbar = false}",
+                vec![
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    },
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    },
+                ],
+            ),
+            (
+                "{\nfoo = true, bar = false\n}",
+                vec![
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    },
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    },
+                ],
+            ),
+            //(
+            //    "{\n  foo = true,\n  bar = false\n}",
+            //    vec![
+            //        ObjectElem {
+            //            key: ObjectKey::Identifier(Identifier("foo".to_string())),
+            //            value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+            //        },
+            //        ObjectElem {
+            //            key: ObjectKey::Identifier(Identifier("bar".to_string())),
+            //            value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+            //        },
+            //    ],
+            //),
         ]
     );
 
