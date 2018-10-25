@@ -322,9 +322,24 @@ mod tests {
     use super::*;
     use std::str::FromStr;
 
-    #[test]
-    fn test_comment() {
-        let tests = vec![
+    macro_rules! test_production {
+        ($testname:ident, $func:ident, $cases:expr) => {
+            #[test]
+            fn $testname() {
+                for (text, expected) in $cases {
+                    let actual = $func(text.into());
+                    let (remaining, parsed) = actual.expect("Parse failure");
+                    assert!(remaining.is_empty());
+                    assert_eq!(expected, parsed);
+                }
+            }
+        };
+    }
+
+    test_production!(
+        test_comment,
+        comment,
+        vec![
             (
                 "# This is a single line comment\r\n",
                 Comment(" This is a single line comment".to_string()),
@@ -345,19 +360,13 @@ mod tests {
                 "/* This is a multi\n line\r\n comment */",
                 Comment(" This is a multi\n line\r\n comment ".to_string()),
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = comment(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_identifier() {
-        let tests = vec![
+    test_production!(
+        test_identifier,
+        identifier,
+        vec![
             ("ident", Identifier("ident".to_string())),
             ("kebab-case", Identifier("kebab-case".to_string())),
             ("snake_case", Identifier("snake_case".to_string())),
@@ -377,19 +386,13 @@ mod tests {
                 "__underunderprefix",
                 Identifier("__underunderprefix".to_string()),
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = identifier(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_numericlit() {
-        let tests = vec![
+    test_production!(
+        test_numericlit,
+        numericlit,
+        vec![
             ("1", NumericLit(f64::from_str("1").unwrap())),
             ("1.1", NumericLit(f64::from_str("1.1").unwrap())),
             (" 1.1", NumericLit(f64::from_str("1.1").unwrap())),
@@ -397,19 +400,13 @@ mod tests {
             (" 1.1 ", NumericLit(f64::from_str("1.1").unwrap())),
             //(".1", NumericLit(f64::from_str(".1").unwrap())),
             ("1.1e5", NumericLit(f64::from_str("1.1e5").unwrap())),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = numericlit(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_blocklabels() {
-        let tests = vec![
+    test_production!(
+        test_blocklabels,
+        blocklabels,
+        vec![
             ("", BlockLabels::new()),
             ("ident1", vec![Identifier("ident1".to_string())]),
             (
@@ -420,19 +417,13 @@ mod tests {
                     Identifier("ident3".to_string()),
                 ],
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = blocklabels(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_exprterm() {
-        let tests = vec![(
+    test_production!(
+        test_exprterm,
+        exprterm,
+        vec![(
             "{foo = true, bar = false}",
             ExprTerm::CollectionValue(CollectionValue::Object(vec![
                 ObjectElem {
@@ -444,36 +435,24 @@ mod tests {
                     value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                 },
             ])),
-        )];
+        )]
+    );
 
-        for (text, expected) in tests {
-            let actual = exprterm(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_literalvalue() {
-        let tests = vec![
+    test_production!(
+        test_literalvalue,
+        literalvalue,
+        vec![
             ("true", LiteralValue::True),
             ("false", LiteralValue::False),
             ("null", LiteralValue::Null),
             ("3.14", LiteralValue::NumericLit(NumericLit(3.14))),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = literalvalue(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_tuple() {
-        let tests = vec![
+    test_production!(
+        test_tuple,
+        tuple,
+        vec![
             ("[]", Tuple::new()),
             (
                 "[true]",
@@ -492,19 +471,13 @@ mod tests {
                     ))),
                 ],
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = tuple(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_object() {
-        let tests = vec![
+    test_production!(
+        test_object,
+        object,
+        vec![
             ("{}", Object::new()),
             (
                 "{foo = true, bar = false}",
@@ -519,19 +492,13 @@ mod tests {
                     },
                 ],
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = object(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_collectionvalue() {
-        let tests = vec![
+    test_production!(
+        test_collectionvalue,
+        collectionvalue,
+        vec![
             ("[]", CollectionValue::Tuple(Tuple::new())),
             ("{}", CollectionValue::Object(Object::new())),
             (
@@ -554,19 +521,13 @@ mod tests {
                     },
                 ]),
             ),
-        ];
+        ]
+    );
 
-        for (text, expected) in tests {
-            let actual = collectionvalue(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
-
-    #[test]
-    fn test_functioncall() {
-        let tests = vec![
+    test_production!(
+        test_functioncall,
+        functioncall,
+        vec![
             (
                 "nullary()",
                 FunctionCall {
@@ -607,13 +568,6 @@ mod tests {
                     ],
                 },
             ),
-        ];
-
-        for (text, expected) in tests {
-            let actual = functioncall(text.into());
-            let (remaining, parsed) = actual.expect("Parse failure");
-            assert!(remaining.is_empty());
-            assert_eq!(expected, parsed);
-        }
-    }
+        ]
+    );
 }
