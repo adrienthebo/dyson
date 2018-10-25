@@ -127,7 +127,7 @@ pub enum Expression {
 pub enum ExprTerm {
     LiteralValue(LiteralValue),
     CollectionValue(CollectionValue),
-    //TemplateExpr,
+    TemplateExpr(TemplateExpr),
     //VariableExpr,
     //FunctionCall,
     //ForExpr,
