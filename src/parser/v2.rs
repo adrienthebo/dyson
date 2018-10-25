@@ -330,6 +330,17 @@ named!(for_cond(CompleteStr) -> ForCond,
     )
 );
 
+named!(for_intro(CompleteStr) -> ForIntro,
+    do_parse!(
+        tag!("for")                                                        >>
+        idents: pair!(identifier, opt!(preceded!(char!(','), identifier))) >>
+        tag!("in")                                                         >>
+        expr: expression                                                   >>
+        char!(':')                                                         >>
+        (ForIntro { idents, expr })
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -618,4 +629,27 @@ mod tests {
         ]
     );
 
+    test_production!(
+        test_for_intro,
+        for_intro,
+        vec![(
+            "for item in [1, 2, 3]:",
+            ForIntro {
+                idents: (Identifier("item".to_string()), None),
+                expr: Expression::ExprTerm(ExprTerm::CollectionValue(CollectionValue::Tuple(
+                    vec![
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                            NumericLit(1.0)
+                        ))),
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                            NumericLit(2.0)
+                        ))),
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                            NumericLit(3.0)
+                        )))
+                    ]
+                )))
+            }
+        )]
+    );
 }

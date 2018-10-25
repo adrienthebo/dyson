@@ -196,3 +196,9 @@ pub struct FunctionCall {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ForCond(pub Expression);
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ForIntro {
+    pub idents: (Identifier, Option<Identifier>),
+    pub expr: Expression
+}
