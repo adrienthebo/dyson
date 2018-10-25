@@ -39,11 +39,13 @@ named!(pub multi_line_comment(CompleteStr) -> Comment,
 );
 
 named!(pub single_line_comment(CompleteStr) -> Comment,
-    do_parse!(
-        _prefix: alt!(tag!("#") | tag!("//"))        >>
-        s: take_till!(|ch| ch == '\r' || ch == '\n') >>
-        _suffix: opt!(call!(nom::line_ending))       >>
-        (Comment(s.to_string()))
+    delimited!(
+        alt!(tag!("#") | tag!("//")),
+        map!(
+            take_till!(|ch| ch == '\r' || ch == '\n'),
+            |s| { Comment(s.to_string()) }
+        ),
+        opt!(call!(nom::line_ending))
     )
 );
 
@@ -133,11 +135,11 @@ named!(pub blocklabels(CompleteStr) -> BlockLabels,
 
 named!(pub block(CompleteStr) -> Block,
     do_parse!(
-        ident: identifier                               >>
-        labels: blocklabels                             >>
-        _bodyopen: pair!(char!('{'), nom::line_ending)  >>
-        inner: body                                     >>
-        _bodyclose: pair!(char!('}'), nom::line_ending) >>
+        ident: identifier                   >>
+        labels: blocklabels                 >>
+        pair!(char!('{'), nom::line_ending) >>
+        inner: body                         >>
+        pair!(char!('}'), nom::line_ending) >>
         (Block { ident, labels, body: inner })
     )
 );
@@ -151,10 +153,7 @@ named!(pub bodyitem(CompleteStr) -> BodyItem,
 
 named!(pub body(CompleteStr) -> Body,
     map!(
-        fold_many0!(bodyitem, BodyItems::new(), |mut acc: BodyItems, it: BodyItem| {
-            acc.push(it);
-            acc
-        }),
+        many0!(bodyitem),
         |v: BodyItems| { Body(v) }
     )
 );
@@ -169,32 +168,30 @@ named!(pub literalvalue(CompleteStr) -> LiteralValue,
 );
 
 named!(pub tuple(CompleteStr) -> Tuple,
-    do_parse!(
-        char!('[')                                        >>
-        list: many0!(terminated!(expression, char!(','))) >>
-        last: opt!(expression)                            >>
-        char!(']')                                        >>
-        ({
-            let mut list = list;
-            if let Some(item) = last {
-                list.push(item);
-            }
-            list
-        })
+    delimited!(
+        char!('['),
+        separated_list!(char!(','), expression),
+        char!(']')
+    )
+);
+
+named!(objectkey(CompleteStr) -> ObjectKey,
+    alt!(
+        identifier => { |i| ObjectKey::Identifier(i) } |
+        expression => { |e| ObjectKey::Expression(e) }
     )
 );
 
 named!(pub objectelem(CompleteStr) -> ObjectElem,
-    hws!(
-        do_parse!(
-            key: alt!(
-                identifier => { |i| ObjectKey::Identifier(i) } |
-                expression => { |e| ObjectKey::Expression(e) }
-            )                 >>
-            char!('=')        >>
-            value: expression >>
-            (ObjectElem { key, value })
-        )
+    map!(
+        hws!(
+            separated_pair!(
+                objectkey,
+                char!('='),
+                expression
+            )
+        ),
+        |(key, value)| { ObjectElem { key, value }}
     )
 );
 
@@ -304,29 +301,17 @@ named!(pub functioncall(CompleteStr) -> FunctionCall,
             identifier,
             delimited!(
                 char!('('),
-                pair!(
-                    many0!(terminated!(expression, char!(','))),
-                    opt!(expression)
-                ),
+                separated_list!(char!(','), expression),
                 char!(')')
             )
         ),
-        |(ident, (rest, last))| {
-            let mut arguments = rest;
-            if let Some(item) = last {
-                arguments.push(item);
-            }
-            FunctionCall { ident, arguments }
-        }
+        |(ident, arguments)| { FunctionCall { ident, arguments } }
     )
 );
 
 named!(for_cond(CompleteStr) -> ForCond,
     map!(
-        preceded!(
-            tag!("if"),
-            expression
-        ),
+        preceded!(tag!("if"), expression),
         |e: Expression| { ForCond(e) }
     )
 );
