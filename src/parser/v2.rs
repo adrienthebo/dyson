@@ -568,67 +568,46 @@ mod tests {
     fn test_functioncall() {
         let tests = vec![
             (
-                "nullary()", FunctionCall {
+                "nullary()",
+                FunctionCall {
                     ident: Identifier("nullary".into()),
                     arguments: vec![],
-                }
+                },
             ),
             (
-                "unary(true)", FunctionCall {
+                "unary(true)",
+                FunctionCall {
                     ident: Identifier("unary".into()),
                     arguments: vec![
                         // Read this type declaration to the tune of yakety sax
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::True
-                            )
-                        )
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
                     ],
-                }
+                },
             ),
             (
-                "binary(true, false)", FunctionCall {
+                "binary(true, false)",
+                FunctionCall {
                     ident: Identifier("binary".into()),
                     arguments: vec![
                         // Read this type declaration to the tune of yakety sax
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::True
-                            )
-                        ),
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::False
-                            )
-                        )
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
                     ],
-                }
+                },
             ),
             (
-                "ternary(true, false, null)", FunctionCall {
+                "ternary(true, false, null)",
+                FunctionCall {
                     ident: Identifier("ternary".into()),
                     arguments: vec![
                         // Read this type declaration to the tune of yakety sax
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::True
-                            )
-                        ),
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::False
-                            )
-                        ),
-                        Expression::ExprTerm(
-                            ExprTerm::LiteralValue(
-                                LiteralValue::Null
-                            )
-                        )
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                        Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null)),
                     ],
-                }
+                },
             ),
         ];
-
 
         for (text, expected) in tests {
             let actual = functioncall(text.into());

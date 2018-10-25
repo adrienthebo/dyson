@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
+use std::str::FromStr;
 
 pub type ObjectList = HashMap<String, Node>;
 
@@ -124,7 +124,7 @@ pub type BlockLabels = Vec<Identifier>;
 pub struct Block {
     pub ident: Identifier,
     pub labels: BlockLabels,
-    pub body: Body
+    pub body: Body,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -174,7 +174,7 @@ pub struct ObjectElem {
 #[derive(Debug, PartialEq, Clone)]
 pub enum ObjectKey {
     Identifier(Identifier),
-    Expression(Expression)
+    Expression(Expression),
 }
 
 #[derive(Debug, PartialEq, Clone)]

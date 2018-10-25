@@ -1,8 +1,8 @@
+use ast;
+use nom;
 use nom::types::CompleteStr;
 use std::collections::HashMap;
 use std::str::FromStr;
-use nom;
-use ::ast;
 
 named!(pub string(CompleteStr) -> String,
        ws!(
@@ -155,5 +155,3 @@ named!(pub expr(CompleteStr) -> ast::Node,
 named!(pub parse(CompleteStr) -> ast::Node,
     map!(objectlist, |ol| { ast::Node::ObjectList(ol) })
 );
-
-
