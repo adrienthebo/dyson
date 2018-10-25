@@ -202,3 +202,10 @@ pub struct ForIntro {
     pub idents: (Identifier, Option<Identifier>),
     pub expr: Expression
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ForTupleExpr {
+    pub intro: ForIntro,
+    pub expr: Expression,
+    pub cond: Option<ForCond>,
+}

@@ -95,9 +95,9 @@ named!(identifier(CompleteStr) -> Identifier,
 );
 
 named!(variable_expr(CompleteStr) -> VariableExpr,
-    flat_map!(
-        recognize!(identifier),
-        parse_to!(VariableExpr)
+    map!(
+        identifier,
+        |ident| { VariableExpr(ident.0) }
     )
 );
 
@@ -160,31 +160,27 @@ named!(pub body(CompleteStr) -> Body,
 );
 
 named!(pub literalvalue(CompleteStr) -> LiteralValue,
-    hws!(
-        alt!(
-            numericlit    => { |nl| LiteralValue::NumericLit(nl) } |
-            tag!("true")  => { |_| LiteralValue::True } |
-            tag!("false") => { |_| LiteralValue::False } |
-            tag!("null")  => { |_| LiteralValue::Null }
-        )
+    alt!(
+        numericlit    => { |nl| LiteralValue::NumericLit(nl) } |
+        tag!("true")  => { |_| LiteralValue::True } |
+        tag!("false") => { |_| LiteralValue::False } |
+        tag!("null")  => { |_| LiteralValue::Null }
     )
 );
 
 named!(pub tuple(CompleteStr) -> Tuple,
-    hws!(
-        do_parse!(
-            char!('[')                                        >>
-            list: many0!(terminated!(expression, char!(','))) >>
-            last: opt!(expression)                            >>
-            char!(']')                                        >>
-            ({
-                let mut list = list;
-                if let Some(item) = last {
-                    list.push(item);
-                }
-                list
-            })
-        )
+    do_parse!(
+        char!('[')                                        >>
+        list: many0!(terminated!(expression, char!(','))) >>
+        last: opt!(expression)                            >>
+        char!(']')                                        >>
+        ({
+            let mut list = list;
+            if let Some(item) = last {
+                list.push(item);
+            }
+            list
+        })
     )
 );
 
@@ -221,8 +217,10 @@ named!(pub object(CompleteStr) -> Object,
 );
 
 named!(pub expression(CompleteStr) -> Expression,
-    alt!(
-        exprterm => { |et| Expression::ExprTerm(et) }
+    hws!(
+        alt!(
+            exprterm => { |et| Expression::ExprTerm(et) }
+        )
     )
 );
 
@@ -341,6 +339,17 @@ named!(for_intro(CompleteStr) -> ForIntro,
     )
 );
 
+named!(for_tuple_expr(CompleteStr) -> ForTupleExpr,
+    do_parse!(
+        char!('[')           >>
+        intro: for_intro     >>
+        expr: expression     >>
+        cond: opt!(for_cond) >>
+        char!(']')           >>
+        (ForTupleExpr { intro, expr, cond })
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -410,6 +419,18 @@ mod tests {
                 "__underunderprefix",
                 Identifier("__underunderprefix".to_string()),
             ),
+            (
+                " left-whitespace",
+                Identifier("left-whitespace".to_string()),
+            ),
+            (
+                "right-whitespace ",
+                Identifier("right-whitespace".to_string()),
+            ),
+            (
+                " both-whitespace ",
+                Identifier("both-whitespace".to_string()),
+            ),
         ]
     );
 
@@ -464,6 +485,14 @@ mod tests {
             (
                 "i-am-a-variable",
                 ExprTerm::VariableExpr(VariableExpr("i-am-a-variable".to_string())),
+            ),
+            (
+                " left-whitespace",
+                ExprTerm::VariableExpr(VariableExpr("left-whitespace".to_string())),
+            ),
+            (
+                "right-whitespace ",
+                ExprTerm::VariableExpr(VariableExpr("right-whitespace".to_string())),
             ),
             (
                 "func(true)",
@@ -651,5 +680,64 @@ mod tests {
                 )))
             }
         )]
+    );
+
+    test_production!(
+        test_for_tuple_expr,
+        for_tuple_expr,
+        vec![
+            (
+                "[for item in [1, 2, 3]: item]",
+                ForTupleExpr {
+                    intro: ForIntro {
+                        idents: (Identifier("item".to_string()), None),
+                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                            CollectionValue::Tuple(vec![
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(1.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(2.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(3.0))
+                                ))
+                            ])
+                        ))
+                    },
+                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "item".to_string()
+                    ))),
+                    cond: None,
+                }
+            ),
+            (
+                "[for item in [1, 2, 3]: item if true]",
+                ForTupleExpr {
+                    intro: ForIntro {
+                        idents: (Identifier("item".to_string()), None),
+                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                            CollectionValue::Tuple(vec![
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(1.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(2.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(3.0))
+                                ))
+                            ])
+                        ))
+                    },
+                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "item".to_string()
+                    ))),
+                    cond: Some(ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
+                        LiteralValue::True
+                    )))),
+                }
+            )
+        ]
     );
 }
