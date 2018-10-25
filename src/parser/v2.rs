@@ -94,7 +94,7 @@ named!(identifier(CompleteStr) -> Identifier,
     )
 );
 
-named!(variable(CompleteStr) -> VariableExpr,
+named!(variable_expr(CompleteStr) -> VariableExpr,
     flat_map!(
         recognize!(identifier),
         parse_to!(VariableExpr)
@@ -229,7 +229,10 @@ named!(pub expression(CompleteStr) -> Expression,
 named!(pub exprterm(CompleteStr) -> ExprTerm,
     alt!(
         literalvalue    => { |lv| ExprTerm::LiteralValue(lv) } |
-        collectionvalue => { |cv| ExprTerm::CollectionValue(cv) }
+        collectionvalue => { |cv| ExprTerm::CollectionValue(cv) } |
+        template_expr   => { |t| ExprTerm::TemplateExpr(t) } |
+        functioncall    => { |f| ExprTerm::FunctionCall(f) } |
+        variable_expr   => { |v| ExprTerm::VariableExpr(v) }
     )
 );
 
@@ -423,19 +426,34 @@ mod tests {
     test_production!(
         test_exprterm,
         exprterm,
-        vec![(
-            "{foo = true, bar = false}",
-            ExprTerm::CollectionValue(CollectionValue::Object(vec![
-                ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                },
-                ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
-                },
-            ])),
-        )]
+        vec![
+            (
+                "{foo = true, bar = false}",
+                ExprTerm::CollectionValue(CollectionValue::Object(vec![
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    },
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    },
+                ])),
+            ),
+            (
+                "i-am-a-variable",
+                ExprTerm::VariableExpr(VariableExpr("i-am-a-variable".to_string())),
+            ),
+            (
+                "func(true)",
+                ExprTerm::FunctionCall(FunctionCall {
+                    ident: Identifier("func".into()),
+                    arguments: vec![Expression::ExprTerm(ExprTerm::LiteralValue(
+                        LiteralValue::True
+                    )),],
+                })
+            )
+        ]
     );
 
     test_production!(
