@@ -1,4 +1,4 @@
-use super::ast;
+use ast;
 use serde_json::map::Map as JsonMap;
 use serde_json::Value as JsonValue;
 
