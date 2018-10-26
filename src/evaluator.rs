@@ -24,6 +24,6 @@ impl Error for EvalError {
     }
 }
 
-pub fn eval<'a>(node: ast::Node) -> Result<JsonValue, EvalError> {
+pub fn eval(node: ast::Node) -> Result<JsonValue, EvalError> {
     Ok(JsonValue::from(node))
 }

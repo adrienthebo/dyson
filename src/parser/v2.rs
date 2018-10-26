@@ -20,7 +20,7 @@ macro_rules! hws (
                 Ok((ltrim, o)) => {
                     match (hsp)(ltrim) {
                         Err(e) => Err(Err::convert(e)),
-                        Ok((ztrim, _)) => Ok((ztrim, o))
+                        Ok((trim, _)) => Ok((trim, o))
                     }
                 }
             }
@@ -66,11 +66,10 @@ where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar,
 {
-    let out = input.split_at_position(|item| {
+    input.split_at_position(|item| {
         let ch = item.as_char();
         !(ch.is_xid_continue() || ch == '-')
-    });
-    out
+    })
 }
 
 named!(identifier(CompleteStr) -> Identifier,
@@ -349,6 +348,13 @@ named!(for_object_expr(CompleteStr) -> ForObjectExpr,
         cond: opt!(for_cond)     >>
         char!('}')               >>
         (ForObjectExpr { intro, k_expr, v_expr, group: group.is_some(), cond })
+    )
+);
+
+named!(for_expr(CompleteStr) -> ForExpr,
+    alt!(
+        for_tuple_expr  => { |t| ForExpr::ForTupleExpr(t) } |
+        for_object_expr => { |o| ForExpr::ForObjectExpr(o) }
     )
 );
 
@@ -834,6 +840,60 @@ mod tests {
                     cond: None,
                 }
             )
+        ]
+    );
+
+    test_production!(
+        test_for_expr,
+        for_expr,
+        vec![
+            (
+                r#"{for k, v in injective: v => k}"#,
+                ForExpr::ForObjectExpr(ForObjectExpr {
+                    intro: ForIntro {
+                        idents: (
+                            Identifier("k".to_string()),
+                            Some(Identifier("v".to_string()))
+                        ),
+                        expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                            "injective".to_string()
+                        )))
+                    },
+                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "v".to_string()
+                    ))),
+                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "k".to_string()
+                    ))),
+                    group: false,
+                    cond: None,
+                })
+            ),
+            (
+                "[for item in [1, 2, 3]: item]",
+                ForExpr::ForTupleExpr(ForTupleExpr {
+                    intro: ForIntro {
+                        idents: (Identifier("item".to_string()), None),
+                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                            CollectionValue::Tuple(vec![
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(1.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(2.0))
+                                )),
+                                Expression::ExprTerm(ExprTerm::LiteralValue(
+                                    LiteralValue::NumericLit(NumericLit(3.0))
+                                ))
+                            ])
+                        ))
+                    },
+                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "item".to_string()
+                    ))),
+                    cond: None,
+                })
+            ),
         ]
     );
 }

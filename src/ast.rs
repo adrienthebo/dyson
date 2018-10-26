@@ -218,3 +218,9 @@ pub struct ForObjectExpr {
     pub group: bool,
     pub cond: Option<ForCond>,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ForExpr {
+    ForTupleExpr(ForTupleExpr),
+    ForObjectExpr(ForObjectExpr),
+}
