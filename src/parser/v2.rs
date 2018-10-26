@@ -197,9 +197,9 @@ named!(pub objectelem(CompleteStr) -> ObjectElem,
 
 named!(objectelem_term(CompleteStr) -> CompleteStr,
     alt!(
-        nom::line_ending |
-        tag!(",") |
-        recognize!(pair!(tag!(","), nom::line_ending))
+        recognize!(pair!(tag!(","), nom::line_ending)) |
+        nom::line_ending                               |
+        tag!(",")
     )
 );
 
@@ -599,19 +599,19 @@ mod tests {
                     },
                 ],
             ),
-            //(
-            //    "{\n  foo = true,\n  bar = false\n}",
-            //    vec![
-            //        ObjectElem {
-            //            key: ObjectKey::Identifier(Identifier("foo".to_string())),
-            //            value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-            //        },
-            //        ObjectElem {
-            //            key: ObjectKey::Identifier(Identifier("bar".to_string())),
-            //            value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
-            //        },
-            //    ],
-            //),
+            (
+                "{\n  foo = true,\n  bar = false\n}",
+                vec![
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("foo".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    },
+                    ObjectElem {
+                        key: ObjectKey::Identifier(Identifier("bar".to_string())),
+                        value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    },
+                ],
+            ),
         ]
     );
 
