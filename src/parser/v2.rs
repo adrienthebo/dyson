@@ -312,7 +312,7 @@ named!(pub functioncall(CompleteStr) -> FunctionCall,
 named!(for_cond(CompleteStr) -> ForCond,
     map!(
         preceded!(tag!("if"), expression),
-        |e: Expression| { ForCond(e) }
+        |e: Expression| { ForCond(Box::new(e)) }
     )
 );
 
@@ -323,7 +323,7 @@ named!(for_intro(CompleteStr) -> ForIntro,
         tag!("in")                                                         >>
         expr: expression                                                   >>
         char!(':')                                                         >>
-        (ForIntro { idents, expr })
+        (ForIntro { idents, expr: Box::new(expr) })
     )
 );
 
@@ -334,7 +334,7 @@ named!(for_tuple_expr(CompleteStr) -> ForTupleExpr,
         expr: expression     >>
         cond: opt!(for_cond) >>
         char!(']')           >>
-        (ForTupleExpr { intro, expr, cond })
+        (ForTupleExpr { intro, expr: Box::new(expr), cond })
     )
 );
 
@@ -348,7 +348,7 @@ named!(for_object_expr(CompleteStr) -> ForObjectExpr,
         group: opt!(tag!("...")) >>
         cond: opt!(for_cond)     >>
         char!('}')               >>
-        (ForObjectExpr { intro, k_expr, v_expr, group: group.is_some(), cond })
+        (ForObjectExpr { intro, k_expr: Box::new(k_expr), v_expr: Box::new(v_expr), group: group.is_some(), cond })
     )
 );
 
@@ -697,15 +697,15 @@ mod tests {
         vec![
             (
                 "if true",
-                ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
+                ForCond(Box::new(Expression::ExprTerm(ExprTerm::LiteralValue(
                     LiteralValue::True
-                )),)
+                )),))
             ),
             (
                 "if false",
-                ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
+                ForCond(Box::new(Expression::ExprTerm(ExprTerm::LiteralValue(
                     LiteralValue::False
-                )),)
+                )),))
             ),
         ]
     );
@@ -717,8 +717,8 @@ mod tests {
             "for item in [1, 2, 3]:",
             ForIntro {
                 idents: (Identifier("item".to_string()), None),
-                expr: Expression::ExprTerm(ExprTerm::CollectionValue(CollectionValue::Tuple(
-                    vec![
+                expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
+                    CollectionValue::Tuple(vec![
                         Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
                             NumericLit(1.0)
                         ))),
@@ -728,7 +728,7 @@ mod tests {
                         Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
                             NumericLit(3.0)
                         )))
-                    ]
+                    ])
                 )))
             }
         )]
@@ -743,7 +743,7 @@ mod tests {
                 ForTupleExpr {
                     intro: ForIntro {
                         idents: (Identifier("item".to_string()), None),
-                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                             CollectionValue::Tuple(vec![
                                 Expression::ExprTerm(ExprTerm::LiteralValue(
                                     LiteralValue::NumericLit(NumericLit(1.0))
@@ -755,11 +755,11 @@ mod tests {
                                     LiteralValue::NumericLit(NumericLit(3.0))
                                 ))
                             ])
-                        ))
+                        )))
                     },
-                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "item".to_string()
-                    ))),
+                    )))),
                     cond: None,
                 }
             ),
@@ -768,7 +768,7 @@ mod tests {
                 ForTupleExpr {
                     intro: ForIntro {
                         idents: (Identifier("item".to_string()), None),
-                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                             CollectionValue::Tuple(vec![
                                 Expression::ExprTerm(ExprTerm::LiteralValue(
                                     LiteralValue::NumericLit(NumericLit(1.0))
@@ -780,13 +780,13 @@ mod tests {
                                     LiteralValue::NumericLit(NumericLit(3.0))
                                 ))
                             ])
-                        ))
+                        )))
                     },
-                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "item".to_string()
-                    ))),
-                    cond: Some(ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
-                        LiteralValue::True
+                    )))),
+                    cond: Some(ForCond(Box::new(Expression::ExprTerm(
+                        ExprTerm::LiteralValue(LiteralValue::True)
                     )))),
                 }
             )
@@ -805,16 +805,16 @@ mod tests {
                             Identifier("k".to_string()),
                             Some(Identifier("v".to_string()))
                         ),
-                        expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                             "injective".to_string()
-                        )))
+                        ))))
                     },
-                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "v".to_string()
-                    ))),
-                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    )))),
+                    v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "k".to_string()
-                    ))),
+                    )))),
                     group: false,
                     cond: None,
                 }
@@ -827,16 +827,16 @@ mod tests {
                             Identifier("k".to_string()),
                             Some(Identifier("v".to_string()))
                         ),
-                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                             CollectionValue::Object(vec![])
-                        ))
+                        )))
                     },
-                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "v".to_string()
-                    ))),
-                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    )))),
+                    v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "k".to_string()
-                    ))),
+                    )))),
                     group: false,
                     cond: None,
                 }
@@ -856,16 +856,16 @@ mod tests {
                             Identifier("k".to_string()),
                             Some(Identifier("v".to_string()))
                         ),
-                        expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                             "injective".to_string()
-                        )))
+                        ))))
                     },
-                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "v".to_string()
-                    ))),
-                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    )))),
+                    v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "k".to_string()
-                    ))),
+                    )))),
                     group: false,
                     cond: None,
                 })
@@ -875,7 +875,7 @@ mod tests {
                 ForExpr::ForTupleExpr(ForTupleExpr {
                     intro: ForIntro {
                         idents: (Identifier("item".to_string()), None),
-                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                        expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                             CollectionValue::Tuple(vec![
                                 Expression::ExprTerm(ExprTerm::LiteralValue(
                                     LiteralValue::NumericLit(NumericLit(1.0))
@@ -887,11 +887,11 @@ mod tests {
                                     LiteralValue::NumericLit(NumericLit(3.0))
                                 ))
                             ])
-                        ))
+                        )))
                     },
-                    expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                    expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "item".to_string()
-                    ))),
+                    )))),
                     cond: None,
                 })
             ),

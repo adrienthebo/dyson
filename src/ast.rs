@@ -141,7 +141,11 @@ pub enum ExprTerm {
     TemplateExpr(TemplateExpr),
     VariableExpr(VariableExpr),
     FunctionCall(FunctionCall),
-    //ForExpr,
+
+    // ForExprs contain expressions so must be indirected to prevent overly
+    // recursive type definitions.
+    ForExpr(ForExpr),
+
     //ExprTerm Index,
     //ExprTerm GetAttr,
     //ExprTerm Splat,
@@ -195,26 +199,26 @@ pub struct FunctionCall {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct ForCond(pub Expression);
+pub struct ForCond(pub Box<Expression>);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ForIntro {
     pub idents: (Identifier, Option<Identifier>),
-    pub expr: Expression
+    pub expr: Box<Expression>
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ForTupleExpr {
     pub intro: ForIntro,
-    pub expr: Expression,
+    pub expr: Box<Expression>,
     pub cond: Option<ForCond>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ForObjectExpr {
     pub intro: ForIntro,
-    pub k_expr: Expression,
-    pub v_expr: Expression,
+    pub k_expr: Box<Expression>,
+    pub v_expr: Box<Expression>,
     pub group: bool,
     pub cond: Option<ForCond>,
 }
