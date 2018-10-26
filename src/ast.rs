@@ -209,3 +209,12 @@ pub struct ForTupleExpr {
     pub expr: Expression,
     pub cond: Option<ForCond>,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ForObjectExpr {
+    pub intro: ForIntro,
+    pub k_expr: Expression,
+    pub v_expr: Expression,
+    pub group: bool,
+    pub cond: Option<ForCond>,
+}

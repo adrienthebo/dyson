@@ -338,6 +338,20 @@ named!(for_tuple_expr(CompleteStr) -> ForTupleExpr,
     )
 );
 
+named!(for_object_expr(CompleteStr) -> ForObjectExpr,
+    do_parse!(
+        char!('{')               >>
+        intro: for_intro         >>
+        k_expr: expression       >>
+        tag!("=>")               >>
+        v_expr: expression       >>
+        group: opt!(tag!("...")) >>
+        cond: opt!(for_cond)     >>
+        char!('}')               >>
+        (ForObjectExpr { intro, k_expr, v_expr, group: group.is_some(), cond })
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -350,6 +364,10 @@ mod tests {
                 for (text, expected) in $cases {
                     let actual = $func(text.into());
                     let (remaining, parsed) = actual.expect("Parse failure");
+                    println!(
+                        "remaining = <<<{:?}>>>, parsed = <<<{:?}>>>",
+                        remaining, parsed
+                    );
                     assert!(remaining.is_empty());
                     assert_eq!(expected, parsed);
                 }
@@ -763,6 +781,57 @@ mod tests {
                     cond: Some(ForCond(Expression::ExprTerm(ExprTerm::LiteralValue(
                         LiteralValue::True
                     )))),
+                }
+            )
+        ]
+    );
+
+    test_production!(
+        test_for_object_expr,
+        for_object_expr,
+        vec![
+            (
+                r#"{for k, v in injective: v => k}"#,
+                ForObjectExpr {
+                    intro: ForIntro {
+                        idents: (
+                            Identifier("k".to_string()),
+                            Some(Identifier("v".to_string()))
+                        ),
+                        expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                            "injective".to_string()
+                        )))
+                    },
+                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "v".to_string()
+                    ))),
+                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "k".to_string()
+                    ))),
+                    group: false,
+                    cond: None,
+                }
+            ),
+            (
+                r#"{for k, v in {}: v => k}"#,
+                ForObjectExpr {
+                    intro: ForIntro {
+                        idents: (
+                            Identifier("k".to_string()),
+                            Some(Identifier("v".to_string()))
+                        ),
+                        expr: Expression::ExprTerm(ExprTerm::CollectionValue(
+                            CollectionValue::Object(vec![])
+                        ))
+                    },
+                    k_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "v".to_string()
+                    ))),
+                    v_expr: Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
+                        "k".to_string()
+                    ))),
+                    group: false,
+                    cond: None,
                 }
             )
         ]
