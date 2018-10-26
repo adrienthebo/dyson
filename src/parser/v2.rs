@@ -370,11 +370,11 @@ mod tests {
             fn $testname() {
                 for (text, expected) in $cases {
                     let actual = $func(text.into());
+                    println!("--------------------------------------------------------------------------------");
+                    println!("text = {:?}", text);
                     let (remaining, parsed) = actual.expect("Parse failure");
-                    println!(
-                        "remaining = <<<{:?}>>>, parsed = <<<{:?}>>>",
-                        remaining, parsed
-                    );
+                    println!("parsed = {:?}", parsed);
+                    println!("remaining = {:?}", remaining);
                     assert!(remaining.is_empty());
                     assert_eq!(expected, parsed);
                 }
