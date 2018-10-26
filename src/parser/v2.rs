@@ -29,12 +29,13 @@ macro_rules! hws (
 );
 
 named!(pub multi_line_comment(CompleteStr) -> Comment,
-    preceded!(
-        tag!("/*"),
-        flat_map!(
-            take_until_and_consume!("*/"),
-            parse_to!(Comment)
-        )
+    flat_map!(
+        delimited!(
+            tag!("/*"),
+            take_until!("*/"),
+            tag!("*/")
+        ),
+        parse_to!(Comment)
     )
 );
 
