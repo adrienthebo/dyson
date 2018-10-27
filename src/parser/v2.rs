@@ -158,6 +158,10 @@ named!(pub body(CompleteStr) -> Body,
     )
 );
 
+named!(pub parse(CompleteStr) -> Body,
+    call!(body)
+);
+
 named!(pub literalvalue(CompleteStr) -> LiteralValue,
     alt!(
         numericlit    => { |nl| LiteralValue::NumericLit(nl) } |
