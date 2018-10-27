@@ -359,6 +359,61 @@ named!(for_expr(CompleteStr) -> ForExpr,
     )
 );
 
+named!(index_op(CompleteStr) -> IndexOp,
+    map!(
+        delimited!(
+            char!('['),
+            expression,
+            char!(']')
+        ),
+        |e| { IndexOp(Box::new(e)) }
+    )
+);
+
+named!(get_attr(CompleteStr) -> GetAttr,
+    preceded!(
+        tag!("."),
+        identifier
+    )
+);
+
+named!(attr_splat(CompleteStr) -> SplatOp,
+    map!(
+        preceded!(
+            tag!(".*"),
+            many0!(get_attr)
+        ),
+        |a| {  SplatOp::AttrSplat(a) }
+    )
+);
+
+named!(full_splat(CompleteStr) -> SplatOp,
+    map!(
+        preceded!(
+            tag!("[*]"),
+            many0!(
+                alt!(
+                    get_attr => { |a| FullSplat::GetAttr(a) } |
+                    index_op => { |i| FullSplat::IndexOp(i) }
+                )
+            )
+        ),
+        |a| {  SplatOp::FullSplat(a) }
+    )
+);
+
+named!(splat_op(CompleteStr) -> SplatOp,
+    alt!(attr_splat | full_splat)
+);
+
+named!(expr_term_access(CompleteStr) -> ExprTermAccess,
+    alt!(
+        index_op => { |i| ExprTermAccess::IndexOp(i) } |
+        get_attr => { |a| ExprTermAccess::GetAttr(a) } |
+        splat_op => { |s| ExprTermAccess::SplatOp(s) }
+    )
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;

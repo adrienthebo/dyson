@@ -228,3 +228,27 @@ pub enum ForExpr {
     ForTupleExpr(ForTupleExpr),
     ForObjectExpr(ForObjectExpr),
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct IndexOp(pub Box<Expression>);
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum SplatOp {
+    AttrSplat(Vec<GetAttr>),
+    FullSplat(Vec<FullSplat>),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum FullSplat {
+    GetAttr(GetAttr),
+    IndexOp(IndexOp),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ExprTermAccess {
+    IndexOp(IndexOp),
+    GetAttr(GetAttr),
+    SplatOp(SplatOp),
+}
+
+pub type GetAttr = Identifier;
