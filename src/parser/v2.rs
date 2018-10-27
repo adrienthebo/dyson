@@ -123,7 +123,7 @@ named!(pub attribute(CompleteStr) -> Attribute,
         separated_pair!(
             identifier,
             char!('='),
-            expression
+            terminated!(expression, opt!(nom::line_ending))
         ),
         |(ident, expr)| { Attribute { ident, expr } }
     )

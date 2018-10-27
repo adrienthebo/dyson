@@ -102,6 +102,9 @@ pub type BodyItems = Vec<BodyItem>;
 
 /// [HCL2 body][body]
 ///
+/// A body is a collection of associated attributes and blocks. The meaning of this association is
+/// defined by the calling application.
+///
 /// [body]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#bodies
 #[derive(Debug, PartialEq, Clone)]
 pub struct Body(pub BodyItems);
@@ -112,6 +115,21 @@ pub enum BodyItem {
     BlockItem(Block),
 }
 
+/// [Attribute][attribute]
+///
+/// # Definition
+///
+/// An attribute definition assigns a value to a particular attribute name within a body. Each
+/// distinct attribute name may be defined no more than once within a single body.
+///
+/// The attribute value is given as an expression, which is retained literally for later evaluation
+/// by the calling application.
+///
+/// # Grammar
+///
+/// `Attribute = Identifier "=" Expression Newline`
+///
+/// [attribute]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#attribute-definitions
 #[derive(Debug, PartialEq, Clone)]
 pub struct Attribute {
     pub ident: Identifier,

@@ -1,1 +1,1 @@
-"trivial" = "true"
+trivial = "true"
