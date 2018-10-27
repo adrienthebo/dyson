@@ -130,7 +130,12 @@ named!(pub attribute(CompleteStr) -> Attribute,
 );
 
 named!(pub blocklabels(CompleteStr) -> BlockLabels,
-    many0!(identifier)
+    many0!(
+        alt!(
+            identifier => { |i| BlockLabel::Identifier(i) } |
+            stringlit => { |s| BlockLabel::StringLit(s) }
+        )
+    )
 );
 
 named!(pub block(CompleteStr) -> Block,

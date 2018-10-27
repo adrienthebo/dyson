@@ -136,7 +136,36 @@ pub struct Attribute {
     pub expr: Expression,
 }
 
-pub type BlockLabels = Vec<Identifier>;
+/// Block label
+///
+/// # Definition
+///
+/// Block labels can either be quoted literal strings or naked identifiers.
+///
+/// # Grammar
+///
+/// `BlockLabel = StringLit | Identifier`
+///
+#[derive(Debug, PartialEq, Clone)]
+pub enum BlockLabel {
+    Identifier(Identifier),
+    StringLit(StringLit)
+}
+
+/// Block Labels
+///
+/// # Definition
+///
+/// Block labels are one or more identifiers attached to a block.
+///
+/// # Grammar
+///
+/// `BlockLabels = (StringLit|Identifier)* "{" Newline Body "}" Newline;
+///
+/// # Notes
+///
+/// The Blocklabels production does not exist in the official HCL2 grammar
+pub type BlockLabels = Vec<BlockLabel>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Block {

@@ -107,13 +107,23 @@ test_production!(
     blocklabels,
     vec![
         ("", BlockLabels::new()),
-        ("ident1", vec![Identifier("ident1".to_string())]),
+        (
+            "ident1",
+            vec![BlockLabel::Identifier(Identifier("ident1".to_string()))]
+        ),
         (
             "ident1 ident2 ident3",
             vec![
-                Identifier("ident1".to_string()),
-                Identifier("ident2".to_string()),
-                Identifier("ident3".to_string()),
+                BlockLabel::Identifier(Identifier("ident1".to_string())),
+                BlockLabel::Identifier(Identifier("ident2".to_string())),
+                BlockLabel::Identifier(Identifier("ident3".to_string())),
+            ],
+        ),
+        (
+            r#"ident "stringlit""#,
+            vec![
+                BlockLabel::Identifier(Identifier("ident".to_string())),
+                BlockLabel::StringLit(StringLit("stringlit".to_string())),
             ],
         ),
     ]
@@ -386,15 +396,15 @@ test_production!(
                     idents: (Identifier("item".to_string()), None),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(1.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(2.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(3.0))
-                            ))
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(1.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(2.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(3.0)
+                            )))
                         ])
                     )))
                 },
@@ -411,15 +421,15 @@ test_production!(
                     idents: (Identifier("item".to_string()), None),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(1.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(2.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(3.0))
-                            ))
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(1.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(2.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(3.0)
+                            )))
                         ])
                     )))
                 },
@@ -518,15 +528,15 @@ test_production!(
                     idents: (Identifier("item".to_string()), None),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(1.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(2.0))
-                            )),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(
-                                LiteralValue::NumericLit(NumericLit(3.0))
-                            ))
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(1.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(2.0)
+                            ))),
+                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
+                                NumericLit(3.0)
+                            )))
                         ])
                     )))
                 },
