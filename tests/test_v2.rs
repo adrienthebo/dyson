@@ -132,29 +132,17 @@ test_production!(
 test_production!(
     test_block,
     block,
-    vec![
-        (
-            "nullaryblock {\n  blockitem = true\n}\n",
-            Block {
-                ident: Identifier("block".to_string()),
-                labels: vec![],
-                body: Body(
-                    vec![
-                    BodyItem::AttrItem(
-                        Attribute {
-                            ident: Identifier("blockitem".to_string()),
-                            expr: Expression::ExprTerm(
-                                ExprTerm::LiteralValue(
-                                    LiteralValue::Null
-                                )
-                            )
-                        }
-                    )
-                    ]
-                )
-            }
-        )
-    ]
+    vec![(
+        "nullaryblock {\n  blockitem = true\n}\n",
+        Block {
+            ident: Identifier("block".to_string()),
+            labels: vec![],
+            body: Body(vec![BodyItem::AttrItem(Attribute {
+                ident: Identifier("blockitem".to_string()),
+                expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+            })])
+        }
+    )]
 );
 
 test_production!(
@@ -580,43 +568,21 @@ test_production!(
 test_production!(
     test_body,
     body,
-    vec![
-        (
-            "attr = true\n\nblock {\n  blockitem = null\n}\n",
-            Body(
-                vec![
-                    BodyItem::AttrItem(
-                        Attribute {
-                            ident: Identifier("attr".to_string()),
-                            expr: Expression::ExprTerm(
-                                ExprTerm::LiteralValue(
-                                    LiteralValue::True
-                                )
-                            )
-                        }
-                    ),
-                    BodyItem::BlockItem(
-                        Block {
-                            ident: Identifier("block".to_string()),
-                            labels: vec![],
-                            body: Body(
-                                vec![
-                                    BodyItem::AttrItem(
-                                        Attribute {
-                                            ident: Identifier("blockitem".to_string()),
-                                            expr: Expression::ExprTerm(
-                                                ExprTerm::LiteralValue(
-                                                    LiteralValue::Null
-                                                )
-                                            )
-                                        }
-                                    )
-                                ]
-                            )
-                        }
-                    )
-                ]
-            )
-        ),
-    ]
+    vec![(
+        "attr = true\n\nblock {\n  blockitem = null\n}\n",
+        Body(vec![
+            BodyItem::AttrItem(Attribute {
+                ident: Identifier("attr".to_string()),
+                expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+            }),
+            BodyItem::BlockItem(Block {
+                ident: Identifier("block".to_string()),
+                labels: vec![],
+                body: Body(vec![BodyItem::AttrItem(Attribute {
+                    ident: Identifier("blockitem".to_string()),
+                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                })])
+            })
+        ])
+    ),]
 );
