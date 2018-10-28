@@ -130,6 +130,34 @@ test_production!(
 );
 
 test_production!(
+    test_block,
+    block,
+    vec![
+        (
+            "nullaryblock {\n  blockitem = true\n}\n",
+            Block {
+                ident: Identifier("block".to_string()),
+                labels: vec![],
+                body: Body(
+                    vec![
+                    BodyItem::AttrItem(
+                        Attribute {
+                            ident: Identifier("blockitem".to_string()),
+                            expr: Expression::ExprTerm(
+                                ExprTerm::LiteralValue(
+                                    LiteralValue::Null
+                                )
+                            )
+                        }
+                    )
+                    ]
+                )
+            }
+        )
+    ]
+);
+
+test_production!(
     test_exprterm,
     exprterm,
     vec![
@@ -592,4 +620,3 @@ test_production!(
         ),
     ]
 );
-
