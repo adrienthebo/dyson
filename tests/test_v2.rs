@@ -14,7 +14,7 @@ macro_rules! test_production {
                 println!("--------------------------------------------------------------------------------");
                 println!("text = {:?}", text);
                 let (remaining, parsed) = actual.expect("Parse failure");
-                println!("parsed = {:?}", parsed);
+                println!("parsed = {:#?}", parsed);
                 println!("remaining = {:?}", remaining);
                 assert!(remaining.is_empty());
                 assert_eq!(expected, parsed);

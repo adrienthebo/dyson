@@ -79,10 +79,13 @@ fn test_fixture(case: &str, expect_pass: bool) {
 
     let parse_res = parse(CompleteStr(&hcl));
     println!("--------------------------------------------------------------------------------");
-    println!("text = {:?}", hcl);
+    println!("-- text:");
+    println!("<<<\n{}\n>>>", hcl);
     let (remaining, parsed) = parse_res.expect("Parse failure");
-    println!("parsed = {:?}", parsed);
-    println!("remaining = {:?}", remaining);
+    println!("-- parsed:");
+    println!("{:#?}", parsed);
+    println!("-- remaining:");
+    println!("<<<\n{}\n>>>", remaining);
     assert!(remaining.is_empty());
 }
 
