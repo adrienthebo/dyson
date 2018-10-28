@@ -3,12 +3,22 @@ use issues::*;
 use nom::types::CompleteStr;
 use nom::{AsChar, IResult, InputTakeAtPosition};
 
+/// Consume HCL whitespace.
+///
+/// # Notes
+///
+/// The reference HCL spec has horizontal tabs (U+0009) but the HCL2 spec forbids
+/// them. For the sake of compatibility we support them, but should probably emit
+/// a warning.
 pub fn hsp<'a, T>(input: T) -> IResult<T, T>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-    input.split_at_position(|item| !(item.as_char() == ' '))
+    input.split_at_position(|item| {
+        let ch = item.as_char();
+        !(ch == ' ' || ch == '\t')
+    })
 }
 
 macro_rules! hws (
@@ -63,6 +73,13 @@ where
     input.split_at_position(|item| item.as_char().is_xid_start())
 }
 
+/// Match the longest sequence of ident continue chars.
+///
+/// # Notes
+///
+/// The HCL2 spec does not include dotted keys as valid identifiers but the
+/// reference examples use them. We shim in support for dotted keys for the
+/// sake of compatibility.
 pub fn ident_continue<T>(input: T) -> IResult<T, T>
 where
     T: InputTakeAtPosition,
@@ -70,7 +87,7 @@ where
 {
     input.split_at_position(|item| {
         let ch = item.as_char();
-        !(ch.is_xid_continue() || ch == '-')
+        !(ch.is_xid_continue() || ch == '-' || ch == '.')
     })
 }
 
