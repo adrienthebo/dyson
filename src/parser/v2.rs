@@ -1,4 +1,5 @@
 use ast::*;
+use issues::*;
 use nom::types::CompleteStr;
 use nom::{AsChar, IResult, InputTakeAtPosition};
 
@@ -130,22 +131,32 @@ named!(pub attribute(CompleteStr) -> Attribute,
 );
 
 named!(pub blocklabels(CompleteStr) -> BlockLabels,
-    many0!(
-        alt!(
-            identifier => { |i| BlockLabel::Identifier(i) } |
-            stringlit => { |s| BlockLabel::StringLit(s) }
+    dbg!(
+    hws!(
+        many0!(
+            alt!(
+                identifier => { |i| BlockLabel::Identifier(i) } |
+                stringlit => { |s| BlockLabel::StringLit(s) }
+            )
         )
+    )
     )
 );
 
 named!(pub block(CompleteStr) -> Block,
-    do_parse!(
-        ident: identifier                   >>
-        labels: blocklabels                 >>
-        pair!(char!('{'), nom::line_ending) >>
-        inner: body                         >>
-        pair!(char!('}'), nom::line_ending) >>
-        (Block { ident, labels, body: inner })
+    hws!(
+        do_parse!(
+            ident: identifier                   >>
+            labels: blocklabels                 >>
+            add_return_error!(
+                // Missing Block LBRACE
+                ErrorKind::Custom(ErrorCode::E00001 as u32),
+                pair!(char!('{'), nom::line_ending)
+            ) >>
+            inner: body                         >>
+            pair!(char!('}'), nom::line_ending) >>
+            (Block { ident, labels, body: inner })
+        )
     )
 );
 
