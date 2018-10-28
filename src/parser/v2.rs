@@ -123,7 +123,7 @@ named!(pub attribute(CompleteStr) -> Attribute,
         separated_pair!(
             identifier,
             char!('='),
-            terminated!(expression, opt!(nom::line_ending))
+            expression
         ),
         |(ident, expr)| { Attribute { ident, expr } }
     )
@@ -158,7 +158,7 @@ named!(pub bodyitem(CompleteStr) -> BodyItem,
 
 named!(pub body(CompleteStr) -> Body,
     map!(
-        many0!(bodyitem),
+        many0!(terminated!(bodyitem, opt!(take_while!(|ch| ch == '\r' || ch == '\n')))),
         |v: BodyItems| { Body(v) }
     )
 );
