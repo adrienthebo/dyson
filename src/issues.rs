@@ -1,5 +1,4 @@
 //! HCL errors
-//!
 
 /*
 pub enum ErrorKind {
