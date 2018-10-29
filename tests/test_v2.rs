@@ -10,14 +10,20 @@ macro_rules! test_production {
         #[test]
         fn $testname() {
             for (text, expected) in $cases {
-                let actual = $func(text.into());
                 println!("--------------------------------------------------------------------------------");
-                println!("text = {:?}", text);
-                let (remaining, parsed) = actual.expect("Parse failure");
-                println!("parsed = {:#?}", parsed);
-                println!("remaining = {:?}", remaining);
+                println!("-- text:");
+                println!("<<<\n{}\n>>>", text);
+
+                let actual = $func(text.into());
+                let (remaining, ast) = actual.expect("Parse failure");
+
+                println!("-- ast:");
+                println!("{:#?}", ast);
+                println!("-- remaining:");
+                println!("<<<\n{}\n>>>", remaining);
+
                 assert!(remaining.is_empty());
-                assert_eq!(expected, parsed);
+                assert_eq!(expected, ast);
             }
         }
     };
@@ -568,21 +574,102 @@ test_production!(
 test_production!(
     test_body,
     body,
-    vec![(
-        "attr = true\n\nblock {\n  blockitem = null\n}\n",
-        Body(vec![
-            BodyItem::AttrItem(Attribute {
-                ident: Identifier("attr".to_string()),
-                expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
-            }),
-            BodyItem::BlockItem(Block {
-                ident: Identifier("block".to_string()),
-                labels: vec![],
-                body: Body(vec![BodyItem::AttrItem(Attribute {
-                    ident: Identifier("blockitem".to_string()),
-                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
-                })])
-            })
-        ])
-    ),]
+    vec![
+        (
+            "attr = true\n\nblock {\n  blockitem = null\n}\n",
+            Body(vec![
+                BodyItem::AttrItem(Attribute {
+                    ident: Identifier("attr".to_string()),
+                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                }),
+                BodyItem::BlockItem(Block {
+                    ident: Identifier("block".to_string()),
+                    labels: vec![],
+                    body: Body(vec![BodyItem::AttrItem(Attribute {
+                        ident: Identifier("blockitem".to_string()),
+                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                    })])
+                })
+            ])
+        ),
+        (
+            "attr = true\n\nblock \"stringlit1\" {\n  blockitem = null\n}\n",
+            Body(
+                vec![
+                BodyItem::AttrItem(Attribute {
+                    ident: Identifier("attr".to_string()),
+                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                }),
+                BodyItem::BlockItem(Block {
+                    ident: Identifier("block".to_string()),
+                    labels: vec![
+                        BlockLabel::StringLit(
+                            StringLit("stringlit1".into()),
+                        )
+                    ],
+                    body: Body(vec![BodyItem::AttrItem(Attribute {
+                        ident: Identifier("blockitem".to_string()),
+                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                    })])
+                })
+            ])
+        ),
+        (
+            "attr = true\n\nblock ident1 \"stringlit1\" {\n  blockitem = null\n}\n",
+            Body(
+                vec![
+                BodyItem::AttrItem(Attribute {
+                    ident: Identifier("attr".to_string()),
+                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                }),
+                BodyItem::BlockItem(Block {
+                    ident: Identifier("block".to_string()),
+                    labels: vec![
+                        BlockLabel::Identifier(
+                            Identifier("ident1".into())
+                        ),
+                        BlockLabel::StringLit(
+                            StringLit("stringlit1".into()),
+                        )
+                    ],
+                    body: Body(vec![BodyItem::AttrItem(Attribute {
+                        ident: Identifier("blockitem".to_string()),
+                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                    })])
+                })
+            ])
+        ),
+        (
+            "foo \"baz\" {\n        key = 7\n        foo = \"bar\n\"\n        \n}",
+            Body(
+                vec![
+                    BodyItem::BlockItem(Block {
+                        ident: Identifier("foo".to_string()),
+                        labels: vec![
+                            BlockLabel::StringLit(
+                                StringLit("baz".to_string())
+                            ),
+                        ],
+                        body: Body(
+                            vec![
+                                BodyItem::AttrItem(
+                                    Attribute {
+                                        ident: Identifier("key".to_string()),
+                                        expr: Expression::ExprTerm(
+                                            ExprTerm::LiteralValue(
+                                                LiteralValue::NumericLit(
+                                                    NumericLit(7.0)
+                                                )
+                                            )
+                                        )
+                                    }
+                                )
+                            ]
+                        )
+                    }
+                )
+            ]
+        )
+    )
+    ]
 );

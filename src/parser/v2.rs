@@ -128,7 +128,17 @@ named!(pub numericlit(CompleteStr) -> NumericLit,
                 tuple!(
                     nom::digit,
                     opt!(preceded!(char!('.'), nom::digit)),
-                    opt!(preceded!(char!('e'), nom::digit))
+                    opt!(
+                        preceded!(
+                            char!('e'),
+                            pair!(
+                                opt!(
+                                    alt!(char!('+') | char!('-'))
+                                ),
+                                nom::digit
+                            )
+                        )
+                    )
                 )
             )
         ),
@@ -148,15 +158,13 @@ named!(pub attribute(CompleteStr) -> Attribute,
 );
 
 named!(pub blocklabels(CompleteStr) -> BlockLabels,
-    dbg!(
     hws!(
         many0!(
             alt!(
                 identifier => { |i| BlockLabel::Identifier(i) } |
-                stringlit => { |s| BlockLabel::StringLit(s) }
+                stringlit  => { |s| BlockLabel::StringLit(s) }
             )
         )
-    )
     )
 );
 
@@ -168,10 +176,23 @@ named!(pub block(CompleteStr) -> Block,
             add_return_error!(
                 // Missing Block LBRACE
                 ErrorKind::Custom(ErrorCode::E00001 as u32),
-                pair!(char!('{'), nom::line_ending)
+                char!('{')
+            ) >>
+            add_return_error!(
+                // Missing block Newline
+                ErrorKind::Custom(ErrorCode::E00003 as u32),
+                call!(nom::line_ending)
             ) >>
             inner: body                         >>
-            pair!(char!('}'), nom::line_ending) >>
+            add_return_error!(
+                // Missing block Newline
+                ErrorKind::Custom(ErrorCode::E00003 as u32),
+                call!(nom::line_ending)
+            ) >>
+            add_return_error!(
+                ErrorKind::Custom(ErrorCode::E00002 as u32),
+                char!('}')
+            ) >>
             (Block { ident, labels, body: inner })
         )
     )
@@ -192,7 +213,12 @@ named!(pub body(CompleteStr) -> Body,
 );
 
 named!(pub parse(CompleteStr) -> Body,
-    call!(body)
+    add_return_error!(
+        ErrorKind::Custom(
+            ErrorCode::E00004 as u32
+        ),
+        complete!(terminated!(body, eof!()))
+    )
 );
 
 named!(pub literalvalue(CompleteStr) -> LiteralValue,
