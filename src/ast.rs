@@ -59,6 +59,12 @@ impl FromStr for Identifier {
     }
 }
 
+impl<'a> From<&'a str> for Identifier {
+    fn from(s: &str) -> Identifier {
+        Identifier(s.to_string())
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct VariableExpr(pub String);
 
@@ -70,6 +76,12 @@ impl FromStr for VariableExpr {
     }
 }
 
+impl<'a> From<&'a str> for VariableExpr {
+    fn from(s: &str) -> VariableExpr {
+        VariableExpr(s.to_string())
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct StringLit(pub String);
 
@@ -78,6 +90,12 @@ impl FromStr for StringLit {
 
     fn from_str(s: &str) -> Result<StringLit, Self::Err> {
         Ok(StringLit(s.into()))
+    }
+}
+
+impl<'a> From<&'a str> for StringLit {
+    fn from(s: &str) -> StringLit {
+        StringLit(s.to_string())
     }
 }
 
