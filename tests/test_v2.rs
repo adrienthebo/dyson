@@ -3,8 +3,6 @@ extern crate hcl_parser;
 use hcl_parser::ast::*;
 use hcl_parser::parser::v2::*;
 
-use std::str::FromStr;
-
 macro_rules! test_production {
     ($testname:ident, $func:ident, $cases:expr) => {
         #[test]
@@ -60,37 +58,22 @@ test_production!(
     test_identifier,
     identifier,
     vec![
-        ("ident", Identifier("ident".to_string())),
-        ("kebab-case", Identifier("kebab-case".to_string())),
-        ("snake_case", Identifier("snake_case".to_string())),
+        ("ident", Identifier::from("ident")),
+        ("kebab-case", Identifier::from("kebab-case")),
+        ("snake_case", Identifier::from("snake_case")),
         (
             "SCREAMING_SNAKE_CASE",
-            Identifier("SCREAMING_SNAKE_CASE".to_string()),
+            Identifier::from("SCREAMING_SNAKE_CASE"),
         ),
-        ("CamelCase", Identifier("CamelCase".to_string())),
-        (
-            "Irate_Camel_Case",
-            Identifier("Irate_Camel_Case".to_string()),
-        ),
-        ("I", Identifier("I".to_string())),
-        ("i", Identifier("i".to_string())),
-        ("_underprefix", Identifier("_underprefix".to_string())),
-        (
-            "__underunderprefix",
-            Identifier("__underunderprefix".to_string()),
-        ),
-        (
-            " left-whitespace",
-            Identifier("left-whitespace".to_string()),
-        ),
-        (
-            "right-whitespace ",
-            Identifier("right-whitespace".to_string()),
-        ),
-        (
-            " both-whitespace ",
-            Identifier("both-whitespace".to_string()),
-        ),
+        ("CamelCase", Identifier::from("CamelCase")),
+        ("Irate_Camel_Case", Identifier::from("Irate_Camel_Case"),),
+        ("I", Identifier::from("I")),
+        ("i", Identifier::from("i")),
+        ("_underprefix", Identifier::from("_underprefix")),
+        ("__underunderprefix", Identifier::from("__underunderprefix"),),
+        (" left-whitespace", Identifier::from("left-whitespace"),),
+        ("right-whitespace ", Identifier::from("right-whitespace"),),
+        (" both-whitespace ", Identifier::from("both-whitespace"),),
     ]
 );
 
@@ -98,13 +81,12 @@ test_production!(
     test_numericlit,
     numericlit,
     vec![
-        ("1", NumericLit(f64::from_str("1").unwrap())),
-        ("1.1", NumericLit(f64::from_str("1.1").unwrap())),
-        (" 1.1", NumericLit(f64::from_str("1.1").unwrap())),
-        ("1.1 ", NumericLit(f64::from_str("1.1").unwrap())),
-        (" 1.1 ", NumericLit(f64::from_str("1.1").unwrap())),
-        //(".1", NumericLit(f64::from_str(".1").unwrap())),
-        ("1.1e5", NumericLit(f64::from_str("1.1e5").unwrap())),
+        ("1", NumericLit(1_f64)),
+        ("1.1", NumericLit(1.1_f64)),
+        (" 1.1", NumericLit(1.1_f64)),
+        ("1.1 ", NumericLit(1.1_f64)),
+        (" 1.1 ", NumericLit(1.1_f64)),
+        ("1.1e5", NumericLit(1.1e5_f64)),
     ]
 );
 
@@ -113,23 +95,20 @@ test_production!(
     blocklabels,
     vec![
         ("", BlockLabels::new()),
-        (
-            "ident1",
-            vec![BlockLabel::Identifier(Identifier("ident1".to_string()))]
-        ),
+        ("ident1", vec![BlockLabel::Identifier("ident1".into())]),
         (
             "ident1 ident2 ident3",
             vec![
-                BlockLabel::Identifier(Identifier("ident1".to_string())),
-                BlockLabel::Identifier(Identifier("ident2".to_string())),
-                BlockLabel::Identifier(Identifier("ident3".to_string())),
+                BlockLabel::Identifier("ident1".into()),
+                BlockLabel::Identifier("ident2".into()),
+                BlockLabel::Identifier("ident3".into()),
             ],
         ),
         (
             r#"ident "stringlit""#,
             vec![
-                BlockLabel::Identifier(Identifier("ident".to_string())),
-                BlockLabel::StringLit(StringLit("stringlit".to_string())),
+                BlockLabel::Identifier("ident".into()),
+                BlockLabel::StringLit("stringlit".into()),
             ],
         ),
     ]
@@ -141,11 +120,11 @@ test_production!(
     vec![(
         "nullaryblock {\n  blockitem = true\n}\n",
         Block {
-            ident: Identifier("block".to_string()),
+            ident: "block".into(),
             labels: vec![],
             body: Body(vec![BodyItem::AttrItem(Attribute {
-                ident: Identifier("blockitem".to_string()),
-                expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                ident: "blockitem".into(),
+                expr: Expression::ExprTerm(LiteralValue::Null.into())
             })])
         }
     )]
@@ -157,36 +136,34 @@ test_production!(
     vec![
         (
             "{foo = true, bar = false}",
-            ExprTerm::CollectionValue(CollectionValue::Object(vec![
+            CollectionValue::Object(vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
-            ])),
+            ]).into(),
         ),
         (
             "i-am-a-variable",
-            ExprTerm::VariableExpr(VariableExpr("i-am-a-variable".to_string())),
+            ExprTerm::VariableExpr("i-am-a-variable".into()),
         ),
         (
             " left-whitespace",
-            ExprTerm::VariableExpr(VariableExpr("left-whitespace".to_string())),
+            ExprTerm::VariableExpr("left-whitespace".into()),
         ),
         (
             "right-whitespace ",
-            ExprTerm::VariableExpr(VariableExpr("right-whitespace".to_string())),
+            ExprTerm::VariableExpr("right-whitespace".into()),
         ),
         (
             "func(true)",
             ExprTerm::FunctionCall(FunctionCall {
-                ident: Identifier("func".into()),
-                arguments: vec![Expression::ExprTerm(ExprTerm::LiteralValue(
-                    LiteralValue::True
-                )),],
+                ident: "func".into(),
+                arguments: vec![Expression::ExprTerm(true.into()),],
             })
         )
     ]
@@ -196,10 +173,10 @@ test_production!(
     test_literalvalue,
     literalvalue,
     vec![
-        ("true", LiteralValue::True),
-        ("false", LiteralValue::False),
+        ("true", true.into()),
+        ("false", false.into()),
         ("null", LiteralValue::Null),
-        ("3.14", LiteralValue::NumericLit(NumericLit(3.14))),
+        ("3.14", 3.14.into())
     ]
 );
 
@@ -208,21 +185,14 @@ test_production!(
     tuple,
     vec![
         ("[]", Tuple::new()),
-        (
-            "[true]",
-            vec![Expression::ExprTerm(ExprTerm::LiteralValue(
-                LiteralValue::True,
-            ))],
-        ),
+        ("[true]", vec![Expression::ExprTerm(true.into())],),
         (
             "[true, false, null, 3.14]",
             vec![
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null)),
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                    NumericLit(3.14),
-                ))),
+                Expression::ExprTerm(true.into()),
+                Expression::ExprTerm(false.into()),
+                Expression::ExprTerm(LiteralValue::Null.into()),
+                Expression::ExprTerm(3.14.into())
             ],
         ),
     ]
@@ -237,12 +207,12 @@ test_production!(
             "{foo = true, bar = false}",
             vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
             ],
         ),
@@ -250,12 +220,12 @@ test_production!(
             "{foo = true\nbar = false}",
             vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
             ],
         ),
@@ -263,12 +233,12 @@ test_production!(
             "{\nfoo = true, bar = false\n}",
             vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
             ],
         ),
@@ -276,12 +246,12 @@ test_production!(
             "{\n  foo = true,\n  bar = false\n}",
             vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
             ],
         ),
@@ -297,20 +267,20 @@ test_production!(
         (
             "[true, false]",
             CollectionValue::Tuple(vec![
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                Expression::ExprTerm(true.into()),
+                Expression::ExprTerm(false.into()),
             ]),
         ),
         (
             "{foo = true, bar = false}",
             CollectionValue::Object(vec![
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("foo".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
+                    key: ObjectKey::Identifier("foo".into()),
+                    value: Expression::ExprTerm(true.into()),
                 },
                 ObjectElem {
-                    key: ObjectKey::Identifier(Identifier("bar".to_string())),
-                    value: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    key: ObjectKey::Identifier("bar".into()),
+                    value: Expression::ExprTerm(false.into()),
                 },
             ]),
         ),
@@ -324,40 +294,35 @@ test_production!(
         (
             "nullary()",
             FunctionCall {
-                ident: Identifier("nullary".into()),
+                ident: "nullary".into(),
                 arguments: vec![],
             },
         ),
         (
             "unary(true)",
             FunctionCall {
-                ident: Identifier("unary".into()),
-                arguments: vec![
-                    // Read this type declaration to the tune of yakety sax
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                ],
+                ident: "unary".into(),
+                arguments: vec![Expression::ExprTerm(true.into()),],
             },
         ),
         (
             "binary(true, false)",
             FunctionCall {
-                ident: Identifier("binary".into()),
+                ident: "binary".into(),
                 arguments: vec![
-                    // Read this type declaration to the tune of yakety sax
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
+                    Expression::ExprTerm(true.into()),
+                    Expression::ExprTerm(false.into()),
                 ],
             },
         ),
         (
             "ternary(true, false, null)",
             FunctionCall {
-                ident: Identifier("ternary".into()),
+                ident: "ternary".into(),
                 arguments: vec![
-                    // Read this type declaration to the tune of yakety sax
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True)),
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::False)),
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null)),
+                    Expression::ExprTerm(true.into()),
+                    Expression::ExprTerm(false.into()),
+                    Expression::ExprTerm(LiteralValue::Null.into()),
                 ],
             },
         ),
@@ -370,15 +335,11 @@ test_production!(
     vec![
         (
             "if true",
-            ForCond(Box::new(Expression::ExprTerm(ExprTerm::LiteralValue(
-                LiteralValue::True
-            )),))
+            ForCond(Box::new(Expression::ExprTerm(true.into())))
         ),
         (
             "if false",
-            ForCond(Box::new(Expression::ExprTerm(ExprTerm::LiteralValue(
-                LiteralValue::False
-            )),))
+            ForCond(Box::new(Expression::ExprTerm(false.into())))
         ),
     ]
 );
@@ -389,18 +350,12 @@ test_production!(
     vec![(
         "for item in [1, 2, 3]:",
         ForIntro {
-            idents: (Identifier("item".to_string()), None),
+            idents: ("item".into(), None),
             expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                 CollectionValue::Tuple(vec![
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                        NumericLit(1.0)
-                    ))),
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                        NumericLit(2.0)
-                    ))),
-                    Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                        NumericLit(3.0)
-                    )))
+                    Expression::ExprTerm(1.0_f64.into()),
+                    Expression::ExprTerm(2.0_f64.into()),
+                    Expression::ExprTerm(3.0_f64.into()),
                 ])
             )))
         }
@@ -415,24 +370,16 @@ test_production!(
             "[for item in [1, 2, 3]: item]",
             ForTupleExpr {
                 intro: ForIntro {
-                    idents: (Identifier("item".to_string()), None),
+                    idents: ("item".into(), None),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(1.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(2.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(3.0)
-                            )))
+                            Expression::ExprTerm(1.0_f64.into()),
+                            Expression::ExprTerm(2.0_f64.into()),
+                            Expression::ExprTerm(3.0_f64.into()),
                         ])
                     )))
                 },
-                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "item".to_string()
-                )))),
+                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
                 cond: None,
             }
         ),
@@ -440,26 +387,18 @@ test_production!(
             "[for item in [1, 2, 3]: item if true]",
             ForTupleExpr {
                 intro: ForIntro {
-                    idents: (Identifier("item".to_string()), None),
+                    idents: ("item".into(), None),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(1.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(2.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(3.0)
-                            )))
+                            Expression::ExprTerm(1.0_f64.into()),
+                            Expression::ExprTerm(2.0_f64.into()),
+                            Expression::ExprTerm(3.0_f64.into()),
                         ])
                     )))
                 },
-                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "item".to_string()
-                )))),
+                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
                 cond: Some(ForCond(Box::new(Expression::ExprTerm(
-                    ExprTerm::LiteralValue(LiteralValue::True)
+                    ExprTerm::LiteralValue(true.into(),)
                 )))),
             }
         )
@@ -474,20 +413,13 @@ test_production!(
             r#"{for k, v in injective: v => k}"#,
             ForObjectExpr {
                 intro: ForIntro {
-                    idents: (
-                        Identifier("k".to_string()),
-                        Some(Identifier("v".to_string()))
-                    ),
-                    expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                        "injective".to_string()
-                    ))))
+                    idents: ("k".into(), Some("v".into())),
+                    expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(
+                        "injective".into()
+                    )))
                 },
-                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "v".to_string()
-                )))),
-                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "k".to_string()
-                )))),
+                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("v".into()))),
+                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("k".into()))),
                 group: false,
                 cond: None,
             }
@@ -496,20 +428,13 @@ test_production!(
             r#"{for k, v in {}: v => k}"#,
             ForObjectExpr {
                 intro: ForIntro {
-                    idents: (
-                        Identifier("k".to_string()),
-                        Some(Identifier("v".to_string()))
-                    ),
+                    idents: ("k".into(), Some("v".into())),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
                         CollectionValue::Object(vec![])
                     )))
                 },
-                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "v".to_string()
-                )))),
-                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "k".to_string()
-                )))),
+                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("v".into()))),
+                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("k".into()))),
                 group: false,
                 cond: None,
             }
@@ -525,20 +450,13 @@ test_production!(
             r#"{for k, v in injective: v => k}"#,
             ForExpr::ForObjectExpr(ForObjectExpr {
                 intro: ForIntro {
-                    idents: (
-                        Identifier("k".to_string()),
-                        Some(Identifier("v".to_string()))
-                    ),
+                    idents: ("k".into(), Some("v".into())),
                     expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
                         "injective".to_string()
                     ))))
                 },
-                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "v".to_string()
-                )))),
-                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "k".to_string()
-                )))),
+                k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("v".into()))),
+                v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("k".into()))),
                 group: false,
                 cond: None,
             })
@@ -547,24 +465,16 @@ test_production!(
             "[for item in [1, 2, 3]: item]",
             ForExpr::ForTupleExpr(ForTupleExpr {
                 intro: ForIntro {
-                    idents: (Identifier("item".to_string()), None),
-                    expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
+                    idents: ("item".into(), None),
+                    expr: Box::new(Expression::ExprTerm(
                         CollectionValue::Tuple(vec![
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(1.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(2.0)
-                            ))),
-                            Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::NumericLit(
-                                NumericLit(3.0)
-                            )))
-                        ])
-                    )))
+                            Expression::ExprTerm(1.0_f64.into()),
+                            Expression::ExprTerm(2.0_f64.into()),
+                            Expression::ExprTerm(3.0_f64.into()),
+                        ]).into()
+                    ))
                 },
-                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr(VariableExpr(
-                    "item".to_string()
-                )))),
+                expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
                 cond: None,
             })
         ),
@@ -579,97 +489,66 @@ test_production!(
             "attr = true\n\nblock {\n  blockitem = null\n}\n",
             Body(vec![
                 BodyItem::AttrItem(Attribute {
-                    ident: Identifier("attr".to_string()),
-                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into())
                 }),
                 BodyItem::BlockItem(Block {
-                    ident: Identifier("block".to_string()),
+                    ident: "block".into(),
                     labels: vec![],
                     body: Body(vec![BodyItem::AttrItem(Attribute {
-                        ident: Identifier("blockitem".to_string()),
-                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                        ident: "blockitem".into(),
+                        expr: Expression::ExprTerm(LiteralValue::Null.into())
                     })])
                 })
             ])
         ),
         (
             "attr = true\n\nblock \"stringlit1\" {\n  blockitem = null\n}\n",
-            Body(
-                vec![
+            Body(vec![
                 BodyItem::AttrItem(Attribute {
-                    ident: Identifier("attr".to_string()),
-                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into())
                 }),
                 BodyItem::BlockItem(Block {
-                    ident: Identifier("block".to_string()),
-                    labels: vec![
-                        BlockLabel::StringLit(
-                            StringLit("stringlit1".into()),
-                        )
-                    ],
+                    ident: "block".into(),
+                    labels: vec![BlockLabel::StringLit("stringlit1".into(),)],
                     body: Body(vec![BodyItem::AttrItem(Attribute {
-                        ident: Identifier("blockitem".to_string()),
-                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                        ident: "blockitem".into(),
+                        expr: Expression::ExprTerm(LiteralValue::Null.into())
                     })])
                 })
             ])
         ),
         (
             "attr = true\n\nblock ident1 \"stringlit1\" {\n  blockitem = null\n}\n",
-            Body(
-                vec![
+            Body(vec![
                 BodyItem::AttrItem(Attribute {
-                    ident: Identifier("attr".to_string()),
-                    expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::True))
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into(),)
                 }),
                 BodyItem::BlockItem(Block {
-                    ident: Identifier("block".to_string()),
+                    ident: "block".into(),
                     labels: vec![
-                        BlockLabel::Identifier(
-                            Identifier("ident1".into())
-                        ),
-                        BlockLabel::StringLit(
-                            StringLit("stringlit1".into()),
-                        )
+                        BlockLabel::Identifier("ident1".into()),
+                        BlockLabel::StringLit("stringlit1".into(),)
                     ],
                     body: Body(vec![BodyItem::AttrItem(Attribute {
                         ident: Identifier("blockitem".to_string()),
-                        expr: Expression::ExprTerm(ExprTerm::LiteralValue(LiteralValue::Null))
+                        expr: Expression::ExprTerm(LiteralValue::Null.into())
                     })])
                 })
             ])
         ),
         (
             "foo \"baz\" {\n        key = 7\n        foo = \"bar\n\"\n        \n}",
-            Body(
-                vec![
-                    BodyItem::BlockItem(Block {
-                        ident: Identifier("foo".to_string()),
-                        labels: vec![
-                            BlockLabel::StringLit(
-                                StringLit("baz".to_string())
-                            ),
-                        ],
-                        body: Body(
-                            vec![
-                                BodyItem::AttrItem(
-                                    Attribute {
-                                        ident: Identifier("key".to_string()),
-                                        expr: Expression::ExprTerm(
-                                            ExprTerm::LiteralValue(
-                                                LiteralValue::NumericLit(
-                                                    NumericLit(7.0)
-                                                )
-                                            )
-                                        )
-                                    }
-                                )
-                            ]
-                        )
-                    }
-                )
-            ]
+            Body(vec![BodyItem::BlockItem(Block {
+                ident: Identifier("foo".to_string()),
+                labels: vec![BlockLabel::StringLit("baz".into()),],
+                body: Body(vec![BodyItem::AttrItem(Attribute {
+                    ident: Identifier("key".to_string()),
+                    expr: Expression::ExprTerm(7.0_f64.into())
+                })])
+            })])
         )
-    )
     ]
 );

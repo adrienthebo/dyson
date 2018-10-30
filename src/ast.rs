@@ -110,6 +110,12 @@ impl FromStr for NumericLit {
     }
 }
 
+impl From<f64> for NumericLit {
+    fn from(f: f64) -> NumericLit {
+        NumericLit(f)
+    }
+}
+
 /// [HCL2 configuration file][configuration-file]
 ///
 /// [configuration-file]: https://github.com/hashicorp/hcl2/blob/master/hcl/hclsyntax/spec.md#configuration-files#[derive(Debug, PartialEq, Clone)]
@@ -216,12 +222,57 @@ pub enum ExprTerm {
     //ExprTerm Splat,
 }
 
+impl From<bool> for ExprTerm {
+    fn from(b: bool) -> ExprTerm {
+        ExprTerm::LiteralValue(b.into())
+    }
+}
+
+impl From<f64> for ExprTerm {
+    fn from(f: f64) -> ExprTerm {
+        ExprTerm::LiteralValue(f.into())
+    }
+}
+
+impl From<CollectionValue> for ExprTerm {
+    fn from(c: CollectionValue) -> ExprTerm {
+        ExprTerm::CollectionValue(c)
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum LiteralValue {
     NumericLit(NumericLit),
     True,
     False,
     Null,
+}
+
+impl From<LiteralValue> for ExprTerm {
+    fn from(l: LiteralValue) -> ExprTerm {
+        ExprTerm::LiteralValue(l)
+    }
+}
+
+impl From<NumericLit> for LiteralValue {
+    fn from(n: NumericLit) -> LiteralValue {
+        LiteralValue::NumericLit(n)
+    }
+}
+
+impl From<bool> for LiteralValue {
+    fn from(b: bool) -> LiteralValue {
+        match b {
+            true => LiteralValue::True,
+            false => LiteralValue::False,
+        }
+    }
+}
+
+impl From<f64> for LiteralValue {
+    fn from(f: f64) -> LiteralValue {
+        LiteralValue::NumericLit(f.into())
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
