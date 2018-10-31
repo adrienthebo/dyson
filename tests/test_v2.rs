@@ -122,78 +122,66 @@ test_production!(
             "foo = \"bar\"\n",
             Attribute {
                 ident: "foo".into(),
-                expr: Expression::ExprTerm(
-                    ExprTerm::TemplateExpr(TemplateExpr::from("bar"))
-                )
+                expr: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from("bar")))
             },
         ),
         (
             "obj = {hello = \"world\"}\n",
             Attribute {
                 ident: "obj".into(),
-                expr: Expression::ExprTerm(
-                    ExprTerm::CollectionValue(
-                        CollectionValue::Object(
-                            vec![
-                                ObjectElem {
-                                    key: ObjectKey::Identifier("hello".into()),
-                                    value: Expression::ExprTerm(
-                                        ExprTerm::TemplateExpr(
-                                            TemplateExpr::from("world")
-                                        )
-                                    )
-                                }
-                            ]
-                        )
-                    )
-                )
+                expr: Expression::ExprTerm(ExprTerm::CollectionValue(CollectionValue::Object(
+                    vec![ObjectElem {
+                        key: ObjectKey::Identifier("hello".into()),
+                        value: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
+                            "world"
+                        )))
+                    }]
+                )))
             },
         )
     ]
 );
 
-
 test_production!(
     test_block,
     block,
-    vec![(
-        "nullaryblock {\n  blockitem = true\n}\n",
-        Block {
-            ident: "nullaryblock".into(),
-            labels: vec![],
-            body: Body(vec![BodyItem::AttrItem(Attribute {
-                ident: "blockitem".into(),
-                expr: Expression::ExprTerm(true.into())
-            })])
-        }
-    ),
-    (
-        "unaryblock \"stringlit\" {\n  blockitem = true\n}\n",
-        Block {
-            ident: "unaryblock".into(),
-            labels: vec![
-                BlockLabel::StringLit("stringlit".into())
-            ],
-            body: Body(vec![BodyItem::AttrItem(Attribute {
-                ident: "blockitem".into(),
-                expr: Expression::ExprTerm(true.into())
-            })])
-        }
-    ),
-    (
-        "binaryblock \"stringlit\" ident1 {\n  blockitem = true\n}\n",
-        Block {
-            ident: "binaryblock".into(),
-            labels: vec![
-                BlockLabel::StringLit("stringlit".into()),
-                BlockLabel::Identifier("ident1".into())
-            ],
-            body: Body(vec![BodyItem::AttrItem(Attribute {
-                ident: "blockitem".into(),
-                expr: Expression::ExprTerm(true.into())
-            })])
-        }
-    ),
+    vec![
+        (
+            "nullaryblock {\n  blockitem = true\n}\n",
+            Block {
+                ident: "nullaryblock".into(),
+                labels: vec![],
+                body: Body(vec![BodyItem::AttrItem(Attribute {
+                    ident: "blockitem".into(),
+                    expr: Expression::ExprTerm(true.into())
+                })])
+            }
+        ),
+        (
+            "unaryblock \"stringlit\" {\n  blockitem = true\n}\n",
+            Block {
+                ident: "unaryblock".into(),
+                labels: vec![BlockLabel::StringLit("stringlit".into())],
+                body: Body(vec![BodyItem::AttrItem(Attribute {
+                    ident: "blockitem".into(),
+                    expr: Expression::ExprTerm(true.into())
+                })])
+            }
+        ),
+        (
+            "binaryblock \"stringlit\" ident1 {\n  blockitem = true\n}\n",
+            Block {
+                ident: "binaryblock".into(),
+                labels: vec![
+                    BlockLabel::StringLit("stringlit".into()),
+                    BlockLabel::Identifier("ident1".into())
+                ],
+                body: Body(vec![BodyItem::AttrItem(Attribute {
+                    ident: "blockitem".into(),
+                    expr: Expression::ExprTerm(true.into())
+                })])
+            }
+        ),
     ]
 );
 
@@ -212,7 +200,8 @@ test_production!(
                     key: ObjectKey::Identifier("bar".into()),
                     value: Expression::ExprTerm(false.into()),
                 },
-            ]).into(),
+            ])
+            .into(),
         ),
         (
             "i-am-a-variable",
@@ -538,7 +527,8 @@ test_production!(
                             Expression::ExprTerm(1.0_f64.into()),
                             Expression::ExprTerm(2.0_f64.into()),
                             Expression::ExprTerm(3.0_f64.into()),
-                        ]).into()
+                        ])
+                        .into()
                     ))
                 },
                 expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
