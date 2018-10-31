@@ -606,6 +606,36 @@ test_production!(
                 })
             ])
         ),
+        (
+            "attr1 = true\nattr2 = false\nattr3 = null\n",
+            Body(vec![
+                BodyItem::AttrItem(Attribute {
+                    ident: "attr1".into(),
+                    expr: Expression::ExprTerm(true.into(),)
+                }),
+                BodyItem::AttrItem(Attribute {
+                    ident: "attr2".into(),
+                    expr: Expression::ExprTerm(false.into(),)
+                }),
+                BodyItem::AttrItem(Attribute {
+                    ident: "attr3".into(),
+                    expr: Expression::ExprTerm(LiteralValue::Null.into())
+                }),
+            ])
+        ),
+        (
+            "attr1 = true\n\n\nattr2 = false\n\n\n",
+            Body(vec![
+                BodyItem::AttrItem(Attribute {
+                    ident: "attr1".into(),
+                    expr: Expression::ExprTerm(true.into(),)
+                }),
+                BodyItem::AttrItem(Attribute {
+                    ident: "attr2".into(),
+                    expr: Expression::ExprTerm(false.into(),)
+                }),
+            ])
+        ),
         //(
         //    "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}",
         //    Body(vec![BodyItem::BlockItem(Block {

@@ -209,7 +209,12 @@ named!(pub bodyitem(CompleteStr) -> BodyItem,
 
 named!(pub body(CompleteStr) -> Body,
     map!(
-        many0!(terminated!(bodyitem, opt!(take_while!(|ch| ch == '\r' || ch == '\n')))),
+        many0!(
+            terminated!(
+                bodyitem,
+                opt!(many0!(nom::line_ending))
+            )
+        ),
         |v: BodyItems| { Body(v) }
     )
 );
