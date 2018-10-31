@@ -148,10 +148,13 @@ named!(pub numericlit(CompleteStr) -> NumericLit,
 
 named!(pub attribute(CompleteStr) -> Attribute,
     map!(
-        separated_pair!(
-            identifier,
-            char!('='),
-            expression
+        terminated!(
+            separated_pair!(
+                identifier,
+                char!('='),
+                expression
+            ),
+            nom::line_ending
         ),
         |(ident, expr)| { Attribute { ident, expr } }
     )

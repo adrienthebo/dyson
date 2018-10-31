@@ -115,6 +115,45 @@ test_production!(
 );
 
 test_production!(
+    test_attribute,
+    attribute,
+    vec![
+        (
+            "foo = \"bar\"\n",
+            Attribute {
+                ident: "foo".into(),
+                expr: Expression::ExprTerm(
+                    ExprTerm::TemplateExpr(TemplateExpr::from("bar"))
+                )
+            },
+        ),
+        (
+            "obj = {hello = \"world\"}\n",
+            Attribute {
+                ident: "obj".into(),
+                expr: Expression::ExprTerm(
+                    ExprTerm::CollectionValue(
+                        CollectionValue::Object(
+                            vec![
+                                ObjectElem {
+                                    key: ObjectKey::Identifier("hello".into()),
+                                    value: Expression::ExprTerm(
+                                        ExprTerm::TemplateExpr(
+                                            TemplateExpr::from("world")
+                                        )
+                                    )
+                                }
+                            ]
+                        )
+                    )
+                )
+            },
+        )
+    ]
+);
+
+
+test_production!(
     test_block,
     block,
     vec![(
