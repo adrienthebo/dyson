@@ -314,6 +314,12 @@ impl FromStr for TemplateExpr {
     }
 }
 
+impl<'a> From<&'a str> for TemplateExpr {
+    fn from(s: &'a str) -> TemplateExpr {
+        TemplateExpr(s.to_string())
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionCall {
     pub ident: Identifier,
