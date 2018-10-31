@@ -78,8 +78,7 @@ where
 /// # Notes
 ///
 /// The HCL2 spec does not include dotted keys as valid identifiers but the
-/// reference examples use them. We shim in support for dotted keys for the
-/// sake of compatibility.
+/// reference examples use them.
 pub fn ident_continue<T>(input: T) -> IResult<T, T>
 where
     T: InputTakeAtPosition,
