@@ -114,21 +114,21 @@ test_production!(
     ]
 );
 
-test_production!(
-    test_block,
-    block,
-    vec![(
-        "nullaryblock {\n  blockitem = true\n}\n",
-        Block {
-            ident: "block".into(),
-            labels: vec![],
-            body: Body(vec![BodyItem::AttrItem(Attribute {
-                ident: "blockitem".into(),
-                expr: Expression::ExprTerm(LiteralValue::Null.into())
-            })])
-        }
-    )]
-);
+//test_production!(
+//    test_block,
+//    block,
+//    vec![(
+//        "nullaryblock {\n  blockitem = true\n}\n",
+//        Block {
+//            ident: "block".into(),
+//            labels: vec![],
+//            body: Body(vec![BodyItem::AttrItem(Attribute {
+//                ident: "blockitem".into(),
+//                expr: Expression::ExprTerm(LiteralValue::Null.into())
+//            })])
+//        }
+//    )]
+//);
 
 test_production!(
     test_exprterm,
@@ -539,16 +539,16 @@ test_production!(
                 })
             ])
         ),
-        (
-            "foo \"baz\" {\n        key = 7\n        foo = \"bar\n\"\n        \n}",
-            Body(vec![BodyItem::BlockItem(Block {
-                ident: Identifier("foo".to_string()),
-                labels: vec![BlockLabel::StringLit("baz".into()),],
-                body: Body(vec![BodyItem::AttrItem(Attribute {
-                    ident: Identifier("key".to_string()),
-                    expr: Expression::ExprTerm(7.0_f64.into())
-                })])
-            })])
-        )
+        //(
+        //    "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}",
+        //    Body(vec![BodyItem::BlockItem(Block {
+        //        ident: Identifier("foo".to_string()),
+        //        labels: vec![BlockLabel::StringLit("baz".into()),],
+        //        body: Body(vec![BodyItem::AttrItem(Attribute {
+        //            ident: Identifier("key".to_string()),
+        //            expr: Expression::ExprTerm(7.0_f64.into())
+        //        })])
+        //    })])
+        //)
     ]
 );
