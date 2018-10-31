@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
+use std::slice::SliceConcatExt;
 
 pub type ObjectList = HashMap<String, Node>;
 
@@ -320,6 +321,39 @@ impl<'a> From<&'a str> for TemplateExpr {
     }
 }
 
+impl TemplateExpr {
+    pub fn from_heredoc<'a>(s: &'a str, do_trim: bool) -> TemplateExpr {
+        match do_trim {
+            true => {
+                let lines = s.split('\n');
+                let to_trim = lines
+                    // Select all lines with at least one leading whitespace
+                    .filter(|l| l.starts_with(' '))
+                    // And then extract the longest whitespace substring
+                    .map(|l| l.chars().take_while(|ch| ch == &' ').collect::<Vec<char>>())
+                    // And then return the shortest whitespace count
+                    .fold(s.len(), |acc, prefix| {
+                        println!("acc = {}, prefix = {:?}", acc, prefix);
+                        ::std::cmp::min(acc, prefix.len())
+                    });
+
+                println!("totrim = {}", to_trim);
+                let trimmed = s.split('\n')
+                    .map(|line| {
+                        if line.starts_with(' ') {
+                            line[to_trim..].to_string()
+                        } else {
+                            line.to_string()
+                        }
+                    }).collect::<Vec<String>>().join("\n");
+
+                TemplateExpr(trimmed)
+            },
+            false => TemplateExpr(s.to_string())
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionCall {
     pub ident: Identifier,
@@ -380,3 +414,29 @@ pub enum ExprTermAccess {
 }
 
 pub type GetAttr = Identifier;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_templateexpr_trim_1() {
+        let text = "This string is\n  prefixed with\n  two spaces";
+        let tmpl = TemplateExpr::from_heredoc(text, true);
+        assert_eq!(tmpl.0, "This string is\nprefixed with\ntwo spaces");
+    }
+
+    #[test]
+    fn test_templateexpr_trim_2() {
+        let text = "    This string is\n  prefixed with\n  two spaces";
+        let tmpl = TemplateExpr::from_heredoc(text, true);
+        assert_eq!(tmpl.0, "  This string is\nprefixed with\ntwo spaces");
+    }
+
+    #[test]
+    fn test_templateexpr_trim_3() {
+        let text = "This string is\n prefixed with\n  one space";
+        let tmpl = TemplateExpr::from_heredoc(text, true);
+        assert_eq!(tmpl.0, "This string is\nprefixed with\n one space");
+    }
+}

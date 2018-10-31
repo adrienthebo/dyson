@@ -328,15 +328,13 @@ named!(pub quoted_template(CompleteStr) -> TemplateExpr,
 
 /// todo: implement template trimming
 named!(pub heredoc_template(CompleteStr) -> TemplateExpr,
-    hws!(
-        do_parse!(
-            tag!("<<")                   >>
-            _do_trim: opt!(char!('-'))   >>
-            ident: identifier            >>
-            call!(nom::line_ending)      >>
-            s: take_until!(&ident.0[..]) >>
-            (TemplateExpr(s.to_string()))
-        )
+    do_parse!(
+        tag!("<<")                               >>
+        do_trim: opt!(char!('-'))                >>
+        ident: identifier                        >>
+        call!(nom::line_ending)                  >>
+        s: take_until_and_consume!(&ident.0[..]) >>
+        (TemplateExpr::from_heredoc(s.0, do_trim.is_some()))
     )
 );
 

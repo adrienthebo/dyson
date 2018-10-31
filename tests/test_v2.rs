@@ -631,26 +631,38 @@ test_production!(
             Body(vec![BodyItem::BlockItem(Block {
                 ident: Identifier("foo".to_string()),
                 labels: vec![BlockLabel::StringLit("baz".into()),],
-                body: Body(
-                    vec![
-                    BodyItem::AttrItem(
-                        Attribute {
-                            ident: Identifier("key".to_string()),
-                            expr: Expression::ExprTerm(7.0_f64.into())
-                        }
-                    ),
-                    BodyItem::AttrItem(
-                        Attribute {
-                            ident: Identifier("foo".to_string()),
-                            expr: Expression::ExprTerm(
-                                ExprTerm::TemplateExpr(
-                                    TemplateExpr::from("bar")
-                                )
-                            )
-                        }
-                    )
+                body: Body(vec![
+                    BodyItem::AttrItem(Attribute {
+                        ident: Identifier("key".to_string()),
+                        expr: Expression::ExprTerm(7.0_f64.into())
+                    }),
+                    BodyItem::AttrItem(Attribute {
+                        ident: Identifier("foo".to_string()),
+                        expr: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
+                            "bar"
+                        )))
+                    })
                 ])
             })])
+        )
+    ]
+);
+
+test_production!(
+    test_templateexpr_heredoc,
+    template_expr,
+    vec![
+        (
+            "<<EOD\nhello, world!\nEOD",
+            TemplateExpr("hello, world!\n".into())
+        ),
+        (
+            "<<-EOD\n  hello,\n   world!\nEOD",
+            TemplateExpr("hello,\n world!\n".into())
+        ),
+        (
+            "<<-OVERLY_DESCRIPTIVE_TERMINATOR\n  hello,\n   world!\nOVERLY_DESCRIPTIVE_TERMINATOR",
+            TemplateExpr("hello,\n world!\n".into())
         )
     ]
 );

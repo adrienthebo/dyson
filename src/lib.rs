@@ -3,6 +3,7 @@
 //! References:
 //!     - [hashicorp/hcl](https://github.com/hashicorp/hcl/tree/v1.0.0)
 #![feature(rustc_private)]
+#![feature(slice_concat_ext)]
 
 #[macro_use]
 extern crate nom;
