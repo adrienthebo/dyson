@@ -48,6 +48,12 @@ impl FromStr for Comment {
     }
 }
 
+impl<'a> From<&'a str> for Comment {
+    fn from(s: &str) -> Comment {
+        Comment(s.to_string())
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Identifier(pub String);
 

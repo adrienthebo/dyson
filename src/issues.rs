@@ -31,4 +31,3 @@ impl std::string::ToString for ErrorCode {
         }
     }
 }
-

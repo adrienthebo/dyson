@@ -40,13 +40,13 @@ macro_rules! hws (
 );
 
 named!(pub multi_line_comment(CompleteStr) -> Comment,
-    flat_map!(
+    map!(
         delimited!(
             tag!("/*"),
             take_until!("*/"),
             tag!("*/")
         ),
-        parse_to!(Comment)
+        |s: CompleteStr| { Comment::from(s.0) }
     )
 );
 
@@ -55,7 +55,7 @@ named!(pub single_line_comment(CompleteStr) -> Comment,
         alt!(tag!("#") | tag!("//")),
         map!(
             take_till!(|ch| ch == '\r' || ch == '\n'),
-            |s| { Comment(s.to_string()) }
+            |s| { Comment::from(s.0) }
         ),
         opt!(call!(nom::line_ending))
     )
