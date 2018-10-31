@@ -92,7 +92,7 @@ where
 }
 
 named!(pub identifier(CompleteStr) -> Identifier,
-    flat_map!(
+    map!(
         hws!(
             recognize!(
                 pair!(
@@ -110,7 +110,7 @@ named!(pub identifier(CompleteStr) -> Identifier,
                 )
             )
         ),
-        parse_to!(Identifier)
+        |s: CompleteStr| { Identifier::from(s.0) }
     )
 );
 
