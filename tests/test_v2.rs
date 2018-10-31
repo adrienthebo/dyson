@@ -141,6 +141,20 @@ test_production!(
             })])
         }
     ),
+    (
+        "binaryblock \"stringlit\" ident1 {\n  blockitem = true\n}\n",
+        Block {
+            ident: "binaryblock".into(),
+            labels: vec![
+                BlockLabel::StringLit("stringlit".into()),
+                BlockLabel::Identifier("ident1".into())
+            ],
+            body: Body(vec![BodyItem::AttrItem(Attribute {
+                ident: "blockitem".into(),
+                expr: Expression::ExprTerm(true.into())
+            })])
+        }
+    ),
     ]
 );
 
