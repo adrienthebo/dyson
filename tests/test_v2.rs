@@ -626,16 +626,31 @@ test_production!(
                 }),
             ])
         ),
-        //(
-        //    "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}",
-        //    Body(vec![BodyItem::BlockItem(Block {
-        //        ident: Identifier("foo".to_string()),
-        //        labels: vec![BlockLabel::StringLit("baz".into()),],
-        //        body: Body(vec![BodyItem::AttrItem(Attribute {
-        //            ident: Identifier("key".to_string()),
-        //            expr: Expression::ExprTerm(7.0_f64.into())
-        //        })])
-        //    })])
-        //)
+        (
+            "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}\n",
+            Body(vec![BodyItem::BlockItem(Block {
+                ident: Identifier("foo".to_string()),
+                labels: vec![BlockLabel::StringLit("baz".into()),],
+                body: Body(
+                    vec![
+                    BodyItem::AttrItem(
+                        Attribute {
+                            ident: Identifier("key".to_string()),
+                            expr: Expression::ExprTerm(7.0_f64.into())
+                        }
+                    ),
+                    BodyItem::AttrItem(
+                        Attribute {
+                            ident: Identifier("foo".to_string()),
+                            expr: Expression::ExprTerm(
+                                ExprTerm::TemplateExpr(
+                                    TemplateExpr::from("bar")
+                                )
+                            )
+                        }
+                    )
+                ])
+            })])
+        )
     ]
 );
