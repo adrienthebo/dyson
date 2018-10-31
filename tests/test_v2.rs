@@ -114,21 +114,35 @@ test_production!(
     ]
 );
 
-//test_production!(
-//    test_block,
-//    block,
-//    vec![(
-//        "nullaryblock {\n  blockitem = true\n}\n",
-//        Block {
-//            ident: "block".into(),
-//            labels: vec![],
-//            body: Body(vec![BodyItem::AttrItem(Attribute {
-//                ident: "blockitem".into(),
-//                expr: Expression::ExprTerm(LiteralValue::Null.into())
-//            })])
-//        }
-//    )]
-//);
+test_production!(
+    test_block,
+    block,
+    vec![(
+        "nullaryblock {\n  blockitem = true\n}\n",
+        Block {
+            ident: "nullaryblock".into(),
+            labels: vec![],
+            body: Body(vec![BodyItem::AttrItem(Attribute {
+                ident: "blockitem".into(),
+                expr: Expression::ExprTerm(true.into())
+            })])
+        }
+    ),
+    (
+        "unaryblock \"stringlit\" {\n  blockitem = true\n}\n",
+        Block {
+            ident: "unaryblock".into(),
+            labels: vec![
+                BlockLabel::StringLit("stringlit".into())
+            ],
+            body: Body(vec![BodyItem::AttrItem(Attribute {
+                ident: "blockitem".into(),
+                expr: Expression::ExprTerm(true.into())
+            })])
+        }
+    ),
+    ]
+);
 
 test_production!(
     test_exprterm,

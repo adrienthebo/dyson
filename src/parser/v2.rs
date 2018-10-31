@@ -179,19 +179,19 @@ named!(pub block(CompleteStr) -> Block,
                 char!('{')
             ) >>
             add_return_error!(
-                // Missing block Newline
                 ErrorKind::Custom(ErrorCode::E00003 as u32),
                 call!(nom::line_ending)
             ) >>
-            inner: body                         >>
-            add_return_error!(
-                // Missing block Newline
-                ErrorKind::Custom(ErrorCode::E00003 as u32),
-                call!(nom::line_ending)
-            ) >>
+            inner: body >>
+            opt!(call!(nom::line_ending)) >>
             add_return_error!(
                 ErrorKind::Custom(ErrorCode::E00002 as u32),
                 char!('}')
+            ) >>
+            add_return_error!(
+                // Missing block Newline
+                ErrorKind::Custom(ErrorCode::E00003 as u32),
+                call!(nom::line_ending)
             ) >>
             (Block { ident, labels, body: inner })
         )
