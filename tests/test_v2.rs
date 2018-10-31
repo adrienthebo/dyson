@@ -10,15 +10,17 @@ macro_rules! test_production {
             for (text, expected) in $cases {
                 println!("--------------------------------------------------------------------------------");
                 println!("-- text:");
-                println!("<<<\n{}\n>>>", text);
+                println!("<<<\n{:#?}\n>>>", text);
 
                 let actual = $func(text.into());
                 let (remaining, ast) = actual.expect("Parse failure");
 
+                println!("-- remaining:");
+                println!("<<<\n{:#?}\n>>>", remaining);
                 println!("-- ast:");
                 println!("{:#?}", ast);
-                println!("-- remaining:");
-                println!("<<<\n{}\n>>>", remaining);
+                println!("-- expected:");
+                println!("<<<\n{:#?}\n>>>", expected);
 
                 assert!(remaining.is_empty());
                 assert_eq!(expected, ast);
