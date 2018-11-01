@@ -236,7 +236,7 @@ test_production!(
         ("true", true.into()),
         ("false", false.into()),
         ("null", LiteralValue::Null),
-        ("3.14", 3.14.into())
+        ("3.1", 3.1.into())
     ]
 );
 
@@ -247,12 +247,12 @@ test_production!(
         ("[]", Tuple::new()),
         ("[true]", vec![Expression::ExprTerm(true.into())],),
         (
-            "[true, false, null, 3.14]",
+            "[true, false, null, 3.1]",
             vec![
                 Expression::ExprTerm(true.into()),
                 Expression::ExprTerm(false.into()),
                 Expression::ExprTerm(LiteralValue::Null.into()),
-                Expression::ExprTerm(3.14.into())
+                Expression::ExprTerm(3.1.into())
             ],
         ),
     ]

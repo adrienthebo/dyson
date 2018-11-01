@@ -5,5 +5,6 @@ rust:
   - beta
   - nightly
 script:
+  - cargo clippy --all-targets --all-features -- -D warnings
   - cargo build --release --verbose --all
   - cargo test --verbose --all
