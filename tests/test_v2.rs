@@ -648,6 +648,15 @@ test_production!(
                     })
                 ])
             })])
+        ),
+        (
+            "attr =<<EOD\nhello, world!\nEOD\n",
+            Body(vec![BodyItem::AttrItem(Attribute {
+                ident: "attr".into(),
+                expr: Expression::ExprTerm(ExprTerm::TemplateExpr(
+                    TemplateExpr::from("hello, world!\n").into()
+                ))
+            }),])
         )
     ]
 );
@@ -659,6 +668,10 @@ test_production!(
         (
             "<<EOD\nhello, world!\nEOD",
             TemplateExpr("hello, world!\n".into())
+        ),
+        (
+            "<<EOD\n  hello,\n  world!\nEOD",
+            TemplateExpr("  hello,\n  world!\n".into())
         ),
         (
             "<<-EOD\n  hello,\n   world!\nEOD",
