@@ -1,5 +1,7 @@
 # Dyson
 
+[![Build Status](https://travis-ci.org/adrienthebo/dyson.svg?branch=master)](https://travis-ci.org/adrienthebo/dyson)
+
 Experiments with Terraform, HCL2, and Rust.
 
 ## Credits
