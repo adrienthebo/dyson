@@ -654,7 +654,7 @@ test_production!(
             Body(vec![BodyItem::AttrItem(Attribute {
                 ident: "attr".into(),
                 expr: Expression::ExprTerm(ExprTerm::TemplateExpr(
-                    TemplateExpr::from("hello, world!\n").into()
+                    TemplateExpr::from("hello, world!\n")
                 ))
             }),])
         )
