@@ -1,4 +1,6 @@
 extern crate hcl_parser;
+#[macro_use]
+extern crate pretty_assertions;
 
 use hcl_parser::ast::*;
 use hcl_parser::parser::v2::*;
