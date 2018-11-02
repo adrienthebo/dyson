@@ -1,9 +1,17 @@
 ---
 language: rust
-cache: cargo
 sudo: false
+
+cache: cargo
+before_cache:
+  - find ./target/debug -type f -maxdepth 1 -delete
+  - rm -f ./target/debug/deps/*ra_*
+
 rust:
   - nightly
+before_script:
+ - rustup component add clippy-preview
+
 script:
   - cargo clippy --all-targets --all-features -- -D warnings
   - cargo build --release --verbose --all
