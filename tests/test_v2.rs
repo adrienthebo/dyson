@@ -5,7 +5,7 @@ extern crate pretty_assertions;
 use hcl_parser::ast::*;
 use hcl_parser::parser::v2::*;
 
-macro_rules! test_production {
+macro_rules! test_productions {
     ($testname:ident, $func:ident, $cases:expr) => {
         #[test]
         fn $testname() {
@@ -31,7 +31,7 @@ macro_rules! test_production {
     };
 }
 
-test_production!(
+test_productions!(
     test_comment,
     comment,
     vec![
@@ -58,7 +58,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_identifier,
     identifier,
     vec![
@@ -81,7 +81,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_numericlit,
     numericlit,
     vec![
@@ -94,7 +94,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_blocklabels,
     blocklabels,
     vec![
@@ -118,7 +118,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_attribute,
     attribute,
     vec![
@@ -146,7 +146,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_block,
     block,
     vec![
@@ -189,7 +189,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_exprterm,
     exprterm,
     vec![
@@ -229,7 +229,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_literalvalue,
     literalvalue,
     vec![
@@ -240,7 +240,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_tuple,
     tuple,
     vec![
@@ -258,7 +258,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_object,
     object,
     vec![
@@ -318,7 +318,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_collectionvalue,
     collectionvalue,
     vec![
@@ -347,7 +347,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_functioncall,
     functioncall,
     vec![
@@ -389,7 +389,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_for_cond,
     for_cond,
     vec![
@@ -404,7 +404,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_for_intro,
     for_intro,
     vec![(
@@ -422,7 +422,7 @@ test_production!(
     )]
 );
 
-test_production!(
+test_productions!(
     test_for_tuple_expr,
     for_tuple_expr,
     vec![
@@ -465,7 +465,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_for_object_expr,
     for_object_expr,
     vec![
@@ -502,7 +502,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_for_expr,
     for_expr,
     vec![
@@ -542,7 +542,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_body,
     body,
     vec![
@@ -661,7 +661,7 @@ test_production!(
     ]
 );
 
-test_production!(
+test_productions!(
     test_templateexpr_heredoc,
     template_expr,
     vec![
