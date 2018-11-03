@@ -152,6 +152,12 @@ impl From<Attribute> for BodyItem {
     }
 }
 
+impl From<Block> for BodyItem {
+    fn from(block: Block) -> BodyItem {
+        BodyItem::BlockItem(block)
+    }
+}
+
 /// [Attribute][attribute]
 ///
 /// # Definition

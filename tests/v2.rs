@@ -540,14 +540,14 @@ test_productions!(
                      ident: "attr".into(),
                      expr: Expression::ExprTerm(true.into())
                  }.into(),
-                BodyItem::BlockItem(Block {
-                    ident: "block".into(),
-                    labels: vec![],
-                    body: Body(vec![Attribute {
-                        ident: "blockitem".into(),
-                        expr: Expression::ExprTerm(LiteralValue::Null.into())
-                    }.into()])
-                })
+                 Block {
+                     ident: "block".into(),
+                     labels: vec![],
+                     body: Body(vec![Attribute {
+                         ident: "blockitem".into(),
+                         expr: Expression::ExprTerm(LiteralValue::Null.into())
+                     }.into()])
+                 }.into()
             ])
         ),
         (
@@ -557,14 +557,14 @@ test_productions!(
                      ident: "attr".into(),
                      expr: Expression::ExprTerm(true.into())
                  }.into(),
-                BodyItem::BlockItem(Block {
-                    ident: "block".into(),
-                    labels: vec![BlockLabel::StringLit("stringlit1".into(),)],
-                    body: Body(vec![Attribute {
-                        ident: "blockitem".into(),
-                        expr: Expression::ExprTerm(LiteralValue::Null.into())
-                    }.into()])
-                })
+                 Block {
+                     ident: "block".into(),
+                     labels: vec![BlockLabel::StringLit("stringlit1".into(),)],
+                     body: Body(vec![Attribute {
+                         ident: "blockitem".into(),
+                         expr: Expression::ExprTerm(LiteralValue::Null.into())
+                     }.into()])
+                 }.into()
             ])
         ),
         (
@@ -574,17 +574,17 @@ test_productions!(
                      ident: "attr".into(),
                      expr: Expression::ExprTerm(true.into(),)
                  }.into(),
-                BodyItem::BlockItem(Block {
-                    ident: "block".into(),
-                    labels: vec![
-                        BlockLabel::Identifier("ident1".into()),
-                        BlockLabel::StringLit("stringlit1".into(),)
-                    ],
-                    body: Body(vec![Attribute {
-                        ident: Identifier("blockitem".to_string()),
-                        expr: Expression::ExprTerm(LiteralValue::Null.into())
-                    }.into()])
-                })
+                 Block {
+                     ident: "block".into(),
+                     labels: vec![
+                         BlockLabel::Identifier("ident1".into()),
+                         BlockLabel::StringLit("stringlit1".into(),)
+                     ],
+                     body: Body(vec![Attribute {
+                         ident: Identifier("blockitem".to_string()),
+                         expr: Expression::ExprTerm(LiteralValue::Null.into())
+                     }.into()])
+                 }.into()
             ])
         ),
         (
@@ -619,7 +619,7 @@ test_productions!(
         ),
         (
             "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}\n",
-            Body(vec![BodyItem::BlockItem(Block {
+            Body(vec![Block {
                 ident: Identifier("foo".to_string()),
                 labels: vec![BlockLabel::StringLit("baz".into()),],
                 body: Body(vec![
@@ -634,7 +634,7 @@ test_productions!(
                                )))
                            }.into()
                 ])
-            })])
+            }.into()])
         ),
         (
             "attr =<<EOD\nhello, world!\nEOD\n",
