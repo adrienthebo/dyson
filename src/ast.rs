@@ -146,6 +146,12 @@ pub enum BodyItem {
     BlockItem(Block),
 }
 
+impl From<Attribute> for BodyItem {
+    fn from(attr: Attribute) -> BodyItem {
+        BodyItem::AttrItem(attr)
+    }
+}
+
 /// [Attribute][attribute]
 ///
 /// # Definition
