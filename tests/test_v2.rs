@@ -1,6 +1,10 @@
+#[macro_use]
 extern crate hcl_parser;
 #[macro_use]
 extern crate pretty_assertions;
+
+#[macro_use]
+use hcl_parser::macros;
 
 use hcl_parser::ast::*;
 use hcl_parser::parser::v2::*;
@@ -10,22 +14,7 @@ macro_rules! test_productions {
         #[test]
         fn $testname() {
             for (text, expected) in $cases {
-                println!("--------------------------------------------------------------------------------");
-                println!("-- text:");
-                println!("<<<\n{:#?}\n>>>", text);
-
-                let actual = $func(text.into());
-                let (remaining, ast) = actual.expect("Parse failure");
-
-                println!("-- remaining:");
-                println!("<<<\n{:#?}\n>>>", remaining);
-                println!("-- ast:");
-                println!("{:#?}", ast);
-                println!("-- expected:");
-                println!("<<<\n{:#?}\n>>>", expected);
-
-                assert!(remaining.is_empty());
-                assert_eq!(expected, ast);
+                try_parse_to!($func, text, expected);
             }
         }
     };

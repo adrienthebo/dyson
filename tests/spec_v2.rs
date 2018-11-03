@@ -1,6 +1,7 @@
 /**
  * Cribbed from github.com/evq/molysite
  */
+#[macro_use]
 extern crate hcl_parser;
 extern crate nom;
 
@@ -75,14 +76,5 @@ fn test_fixture(case: &str, expect_pass: bool) {
     let mut file = File::open(&path).unwrap();
     file.read_to_string(&mut hcl).unwrap();
 
-    let parsed = parse(CompleteStr(&hcl));
-    println!("--------------------------------------------------------------------------------");
-    println!("-- text:");
-    println!("<<<\n{}\n>>>", hcl);
-    let (remaining, ast) = parsed.expect("Parse failure");
-    println!("-- ast:");
-    println!("{:#?}", ast);
-    println!("-- remaining:");
-    println!("<<<\n{}\n>>>", remaining);
-    assert!(remaining.is_empty());
+    try_recognize!(parse, CompleteStr(&hcl));
 }
