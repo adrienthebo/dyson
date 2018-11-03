@@ -351,14 +351,6 @@ impl From<Expression> for TemplateRegion {
 #[derive(Debug, PartialEq, Clone)]
 pub struct TemplateExpr(pub String);
 
-impl FromStr for TemplateExpr {
-    type Err = ParseAstError;
-
-    fn from_str(s: &str) -> Result<TemplateExpr, Self::Err> {
-        Ok(TemplateExpr(s.to_string()))
-    }
-}
-
 impl<'a> From<&'a str> for TemplateExpr {
     fn from(s: &'a str) -> TemplateExpr {
         TemplateExpr(s.to_string())

@@ -315,13 +315,13 @@ named!(pub collectionvalue(CompleteStr) -> CollectionValue,
 
 named!(pub quoted_template(CompleteStr) -> TemplateExpr,
     hws!(
-        flat_map!(
+        map!(
             delimited!(
                 char!('"'),
                 take_until!(r#"""#),
                 char!('"')
             ),
-            parse_to!(TemplateExpr)
+            |s: CompleteStr| { TemplateExpr::from(s.0) }
         )
     )
 );
