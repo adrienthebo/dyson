@@ -119,14 +119,15 @@ test_productions!(
             "obj = {hello = \"world\"}\n",
             Attribute {
                 ident: "obj".into(),
-                expr: Expression::ExprTerm(ExprTerm::CollectionValue(CollectionValue::Object(
-                    vec![ObjectElem {
+                expr: Expression::ExprTerm(
+                    CollectionValue::Object(vec![ObjectElem {
                         key: ObjectKey::Identifier("hello".into()),
                         value: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
                             "world"
                         )))
-                    }]
-                )))
+                    }])
+                    .into()
+                )
             },
         )
     ]
@@ -406,13 +407,14 @@ test_productions!(
         "for item in [1, 2, 3]:",
         ForIntro {
             idents: ("item".into(), None),
-            expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
+            expr: Box::new(Expression::ExprTerm(
                 CollectionValue::Tuple(vec![
                     Expression::ExprTerm(1.0_f64.into()),
                     Expression::ExprTerm(2.0_f64.into()),
                     Expression::ExprTerm(3.0_f64.into()),
                 ])
-            )))
+                .into()
+            ))
         }
     )]
 );
@@ -426,13 +428,14 @@ test_productions!(
             ForTupleExpr {
                 intro: ForIntro {
                     idents: ("item".into(), None),
-                    expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
+                    expr: Box::new(Expression::ExprTerm(
                         CollectionValue::Tuple(vec![
                             Expression::ExprTerm(1.0_f64.into()),
                             Expression::ExprTerm(2.0_f64.into()),
                             Expression::ExprTerm(3.0_f64.into()),
                         ])
-                    )))
+                        .into()
+                    ))
                 },
                 expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
                 cond: None,
@@ -443,13 +446,14 @@ test_productions!(
             ForTupleExpr {
                 intro: ForIntro {
                     idents: ("item".into(), None),
-                    expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
+                    expr: Box::new(Expression::ExprTerm(
                         CollectionValue::Tuple(vec![
                             Expression::ExprTerm(1.0_f64.into()),
                             Expression::ExprTerm(2.0_f64.into()),
                             Expression::ExprTerm(3.0_f64.into()),
                         ])
-                    )))
+                        .into()
+                    ))
                 },
                 expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("item".into()))),
                 cond: Some(ForCond(Box::new(Expression::ExprTerm(
@@ -484,9 +488,7 @@ test_productions!(
             ForObjectExpr {
                 intro: ForIntro {
                     idents: ("k".into(), Some("v".into())),
-                    expr: Box::new(Expression::ExprTerm(ExprTerm::CollectionValue(
-                        CollectionValue::Object(vec![])
-                    )))
+                    expr: Box::new(Expression::ExprTerm(CollectionValue::Object(vec![]).into()))
                 },
                 k_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("v".into()))),
                 v_expr: Box::new(Expression::ExprTerm(ExprTerm::VariableExpr("k".into()))),
@@ -719,12 +721,13 @@ test_productions!(
         ),
         (
             r#"${[true, false]}"#,
-            TemplateRegion::TemplateInterpolation(Expression::ExprTerm(ExprTerm::CollectionValue(
+            TemplateRegion::TemplateInterpolation(Expression::ExprTerm(
                 CollectionValue::Tuple(vec![
                     Expression::ExprTerm(ExprTerm::from(true)),
                     Expression::ExprTerm(ExprTerm::from(false)),
                 ])
-            )))
+                .into()
+            ))
         )
     ]
 );
