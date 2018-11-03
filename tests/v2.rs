@@ -706,3 +706,25 @@ test_productions!(
         )
     ]
 );
+
+test_productions!(
+    test_template_interpolation,
+    template_interpolation,
+    vec![
+        (
+            r#"${"trivial"}"#,
+            TemplateRegion::TemplateInterpolation(Expression::ExprTerm(ExprTerm::TemplateExpr(
+                TemplateExpr::from("trivial")
+            )))
+        ),
+        (
+            r#"${[true, false]}"#,
+            TemplateRegion::TemplateInterpolation(Expression::ExprTerm(ExprTerm::CollectionValue(
+                CollectionValue::Tuple(vec![
+                    Expression::ExprTerm(ExprTerm::from(true)),
+                    Expression::ExprTerm(ExprTerm::from(false)),
+                ])
+            )))
+        )
+    ]
+);

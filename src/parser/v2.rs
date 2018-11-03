@@ -338,6 +338,17 @@ named!(pub heredoc_template(CompleteStr) -> TemplateExpr,
     )
 );
 
+named!(pub template_interpolation(CompleteStr) -> TemplateRegion,
+    map!(
+        delimited!(
+            tag!("${"),
+            expression,
+            tag!("}")
+        ),
+        |e: Expression | { TemplateRegion::TemplateInterpolation(e) }
+    )
+);
+
 named!(pub template_expr(CompleteStr) -> TemplateExpr,
     alt!(quoted_template | heredoc_template)
 );

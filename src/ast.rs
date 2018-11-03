@@ -332,19 +332,20 @@ pub enum ObjectKey {
 /// The TemplateRegion production does not exist in the official HCL2 grammar
 #[derive(Debug, PartialEq, Clone)]
 pub enum TemplateRegion {
-    StringLit(StringLit),
-    Expression(Expression)
+    TemplateLiteral(String),
+    TemplateInterpolation(Expression),
+    // TemplateDirective
 }
 
 impl From<StringLit> for TemplateRegion {
     fn from(s: StringLit) -> TemplateRegion {
-        TemplateRegion::StringLit(s)
+        TemplateRegion::TemplateLiteral(s.0)
     }
 }
 
 impl From<Expression> for TemplateRegion {
     fn from(e: Expression) -> TemplateRegion {
-        TemplateRegion::Expression(e)
+        TemplateRegion::TemplateInterpolation(e)
     }
 }
 
