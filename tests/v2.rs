@@ -142,10 +142,12 @@ test_productions!(
                 ident: "nullaryblock".into(),
                 labels: vec![],
                 body: Body(vec![
-                           Attribute {
-                               ident: "blockitem".into(),
-                               expr: Expression::ExprTerm(true.into())
-                           }.into()])
+                    Attribute {
+                        ident: "blockitem".into(),
+                        expr: Expression::ExprTerm(true.into())
+                    }
+                    .into()
+                ])
             }
         ),
         (
@@ -153,10 +155,13 @@ test_productions!(
             Block {
                 ident: "unaryblock".into(),
                 labels: vec![BlockLabel::StringLit("stringlit".into())],
-                body: Body(vec![Attribute {
-                    ident: "blockitem".into(),
-                    expr: Expression::ExprTerm(true.into())
-                }.into()])
+                body: Body(vec![
+                    Attribute {
+                        ident: "blockitem".into(),
+                        expr: Expression::ExprTerm(true.into())
+                    }
+                    .into()
+                ])
             }
         ),
         (
@@ -167,10 +172,13 @@ test_productions!(
                     BlockLabel::StringLit("stringlit".into()),
                     BlockLabel::Identifier("ident1".into())
                 ],
-                body: Body(vec![Attribute {
-                    ident: "blockitem".into(),
-                    expr: Expression::ExprTerm(true.into())
-                }.into()])
+                body: Body(vec![
+                    Attribute {
+                        ident: "blockitem".into(),
+                        expr: Expression::ExprTerm(true.into())
+                    }
+                    .into()
+                ])
             }
         ),
     ]
@@ -536,114 +544,142 @@ test_productions!(
         (
             "attr = true\n\nblock {\n  blockitem = null\n}\n",
             Body(vec![
-                 Attribute {
-                     ident: "attr".into(),
-                     expr: Expression::ExprTerm(true.into())
-                 }.into(),
-                 Block {
-                     ident: "block".into(),
-                     labels: vec![],
-                     body: Body(vec![Attribute {
-                         ident: "blockitem".into(),
-                         expr: Expression::ExprTerm(LiteralValue::Null.into())
-                     }.into()])
-                 }.into()
+                Attribute {
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into())
+                }
+                .into(),
+                Block {
+                    ident: "block".into(),
+                    labels: vec![],
+                    body: Body(vec![
+                        Attribute {
+                            ident: "blockitem".into(),
+                            expr: Expression::ExprTerm(LiteralValue::Null.into())
+                        }
+                        .into()
+                    ])
+                }
+                .into()
             ])
         ),
         (
             "attr = true\n\nblock \"stringlit1\" {\n  blockitem = null\n}\n",
             Body(vec![
-                 Attribute {
-                     ident: "attr".into(),
-                     expr: Expression::ExprTerm(true.into())
-                 }.into(),
-                 Block {
-                     ident: "block".into(),
-                     labels: vec![BlockLabel::StringLit("stringlit1".into(),)],
-                     body: Body(vec![Attribute {
-                         ident: "blockitem".into(),
-                         expr: Expression::ExprTerm(LiteralValue::Null.into())
-                     }.into()])
-                 }.into()
+                Attribute {
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into())
+                }
+                .into(),
+                Block {
+                    ident: "block".into(),
+                    labels: vec![BlockLabel::StringLit("stringlit1".into(),)],
+                    body: Body(vec![
+                        Attribute {
+                            ident: "blockitem".into(),
+                            expr: Expression::ExprTerm(LiteralValue::Null.into())
+                        }
+                        .into()
+                    ])
+                }
+                .into()
             ])
         ),
         (
             "attr = true\n\nblock ident1 \"stringlit1\" {\n  blockitem = null\n}\n",
             Body(vec![
-                 Attribute {
-                     ident: "attr".into(),
-                     expr: Expression::ExprTerm(true.into(),)
-                 }.into(),
-                 Block {
-                     ident: "block".into(),
-                     labels: vec![
-                         BlockLabel::Identifier("ident1".into()),
-                         BlockLabel::StringLit("stringlit1".into(),)
-                     ],
-                     body: Body(vec![Attribute {
-                         ident: Identifier("blockitem".to_string()),
-                         expr: Expression::ExprTerm(LiteralValue::Null.into())
-                     }.into()])
-                 }.into()
+                Attribute {
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(true.into(),)
+                }
+                .into(),
+                Block {
+                    ident: "block".into(),
+                    labels: vec![
+                        BlockLabel::Identifier("ident1".into()),
+                        BlockLabel::StringLit("stringlit1".into(),)
+                    ],
+                    body: Body(vec![
+                        Attribute {
+                            ident: Identifier("blockitem".to_string()),
+                            expr: Expression::ExprTerm(LiteralValue::Null.into())
+                        }
+                        .into()
+                    ])
+                }
+                .into()
             ])
         ),
         (
             "attr1 = true\nattr2 = false\nattr3 = null\n",
             Body(vec![
-                 Attribute {
-                     ident: "attr1".into(),
-                     expr: Expression::ExprTerm(true.into(),)
-                 }.into(),
-                 Attribute {
-                     ident: "attr2".into(),
-                     expr: Expression::ExprTerm(false.into(),)
-                 }.into(),
-                 Attribute {
-                     ident: "attr3".into(),
-                     expr: Expression::ExprTerm(LiteralValue::Null.into())
-                 }.into(),
+                Attribute {
+                    ident: "attr1".into(),
+                    expr: Expression::ExprTerm(true.into(),)
+                }
+                .into(),
+                Attribute {
+                    ident: "attr2".into(),
+                    expr: Expression::ExprTerm(false.into(),)
+                }
+                .into(),
+                Attribute {
+                    ident: "attr3".into(),
+                    expr: Expression::ExprTerm(LiteralValue::Null.into())
+                }
+                .into(),
             ])
         ),
         (
             "attr1 = true\n\n\nattr2 = false\n\n\n",
             Body(vec![
-                 Attribute {
-                     ident: "attr1".into(),
-                     expr: Expression::ExprTerm(true.into(),)
-                 }.into(),
-                 Attribute {
-                     ident: "attr2".into(),
-                     expr: Expression::ExprTerm(false.into(),)
-                 }.into(),
+                Attribute {
+                    ident: "attr1".into(),
+                    expr: Expression::ExprTerm(true.into(),)
+                }
+                .into(),
+                Attribute {
+                    ident: "attr2".into(),
+                    expr: Expression::ExprTerm(false.into(),)
+                }
+                .into(),
             ])
         ),
         (
             "foo \"baz\" {\n        key = 7\n        foo = \"bar\"\n}\n",
-            Body(vec![Block {
-                ident: Identifier("foo".to_string()),
-                labels: vec![BlockLabel::StringLit("baz".into()),],
-                body: Body(vec![
-                           Attribute {
-                               ident: Identifier("key".to_string()),
-                               expr: Expression::ExprTerm(7.0_f64.into())
-                           }.into(),
-                           Attribute {
-                               ident: Identifier("foo".to_string()),
-                               expr: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
-                                           "bar"
-                               )))
-                           }.into()
-                ])
-            }.into()])
+            Body(vec![
+                Block {
+                    ident: Identifier("foo".to_string()),
+                    labels: vec![BlockLabel::StringLit("baz".into()),],
+                    body: Body(vec![
+                        Attribute {
+                            ident: Identifier("key".to_string()),
+                            expr: Expression::ExprTerm(7.0_f64.into())
+                        }
+                        .into(),
+                        Attribute {
+                            ident: Identifier("foo".to_string()),
+                            expr: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
+                                "bar"
+                            )))
+                        }
+                        .into()
+                    ])
+                }
+                .into()
+            ])
         ),
         (
             "attr =<<EOD\nhello, world!\nEOD\n",
-            Body(vec![Attribute {
-                ident: "attr".into(),
-                expr: Expression::ExprTerm(ExprTerm::TemplateExpr(
-                        TemplateExpr::from("hello, world!\n")
-                ))
-            }.into(),])
+            Body(vec![
+                Attribute {
+                    ident: "attr".into(),
+                    expr: Expression::ExprTerm(ExprTerm::TemplateExpr(TemplateExpr::from(
+                        "hello, world!\n"
+                    )))
+                }
+                .into(),
+            ])
         )
     ]
 );
