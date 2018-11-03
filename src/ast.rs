@@ -316,6 +316,38 @@ pub enum ObjectKey {
     Expression(Expression),
 }
 
+/// Template Regions
+///
+/// # Definition
+///
+/// A template region is a contiguous set of bytes, composing either a string
+/// literal or an interpolated expression.
+///
+/// # Grammar
+///
+/// `TemplateRegion = (StringLit | "${" Expression "}")*`
+///
+/// # Notes
+///
+/// The TemplateRegion production does not exist in the official HCL2 grammar
+#[derive(Debug, PartialEq, Clone)]
+pub enum TemplateRegion {
+    StringLit(StringLit),
+    Expression(Expression)
+}
+
+impl From<StringLit> for TemplateRegion {
+    fn from(s: StringLit) -> TemplateRegion {
+        TemplateRegion::StringLit(s)
+    }
+}
+
+impl From<Expression> for TemplateRegion {
+    fn from(e: Expression) -> TemplateRegion {
+        TemplateRegion::Expression(e)
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct TemplateExpr(pub String);
 
