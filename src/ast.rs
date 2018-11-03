@@ -370,11 +370,9 @@ impl TemplateExpr {
                     .map(|l| l.chars().take_while(|ch| ch == &' ').collect::<Vec<char>>())
                     // And then return the shortest whitespace count
                     .fold(s.len(), |acc, prefix| {
-                        println!("acc = {}, prefix = {:?}", acc, prefix);
                         ::std::cmp::min(acc, prefix.len())
                     });
 
-                println!("totrim = {}", to_trim);
                 let trimmed = s.split('\n')
                     .map(|line| {
                         if line.starts_with(' ') {
