@@ -17,7 +17,7 @@ macro_rules! fixture_tests {
         #[test]
         fn $name() {
             let (case, expect_pass) = $value;
-            test_fixture(case, expect_pass);
+            test_fixture(case);
         }
     )*
     }
@@ -65,7 +65,7 @@ fixture_tests! {
     ////test_fixture_unterminated_brace: ("unterminated_brace", false),
 }
 
-fn test_fixture(case: &str, expect_pass: bool) {
+fn test_fixture(case: &str) {
     let mut hcl = String::new();
     //let mut json = String::new();
 
