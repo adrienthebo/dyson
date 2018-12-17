@@ -321,7 +321,6 @@ named!(pub quoted_template(CompleteStr) -> TemplateExpr,
     )
 );
 
-/// todo: implement template trimming
 named!(pub heredoc_template(CompleteStr) -> TemplateExpr,
     do_parse!(
         tag!("<<")                               >>
