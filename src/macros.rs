@@ -20,7 +20,10 @@ macro_rules! interrobang {
                 println!("-- ast:");
                 println!("{:#?}", ast);
             },
-            Err(ref e) => println!("Parse failed - {:?}", e),
+            Err(ref e) => {
+                println!("Parse failed, error:");
+                println!("<<<\n{:#?}\n>>>", e);
+            }
         }
     }
 }
