@@ -220,12 +220,7 @@ named!(pub body(CompleteStr) -> Body,
 );
 
 named!(pub parse(CompleteStr) -> Body,
-    add_return_error!(
-        ErrorKind::Custom(
-            ErrorCode::E00004 as u32
-        ),
-        complete!(terminated!(body, eof!()))
-    )
+    complete!(terminated!(body, eof!()))
 );
 
 named!(pub literalvalue(CompleteStr) -> LiteralValue,
