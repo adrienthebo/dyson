@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
-use std::slice::SliceConcatExt;
 
 #[derive(Debug)]
 pub struct ParseAstError;
