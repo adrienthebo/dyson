@@ -1,22 +1,7 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 use std::slice::SliceConcatExt;
-
-pub type ObjectList = HashMap<String, Node>;
-
-#[derive(Debug, PartialEq)]
-pub enum Node {
-    TFString(String),
-    TFInteger(i64),
-    TFFloat(f32),
-    Boolean(bool),
-    Array(Vec<Node>),
-    KeyValue(String, String),
-    ObjectList(ObjectList),
-    //Comment(Comment),
-}
 
 #[derive(Debug)]
 pub struct ParseAstError;
