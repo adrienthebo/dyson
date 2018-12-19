@@ -2,6 +2,7 @@ use ast::*;
 use issues::*;
 use nom::types::CompleteStr;
 use nom::{AsChar, IResult, InputTakeAtPosition};
+use unicode_xid::UnicodeXID;
 
 /// Consume HCL whitespace.
 ///
@@ -65,28 +66,20 @@ named!(pub comment(CompleteStr) -> Comment,
     alt!(multi_line_comment | single_line_comment)
 );
 
-pub fn ident_start<T>(input: T) -> IResult<T, T>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar,
-{
-    input.split_at_position(|item| item.as_char().is_xid_start())
-}
-
 /// Match the longest sequence of ident continue chars.
 ///
 /// # Notes
 ///
 /// The HCL2 spec does not include dotted keys as valid identifiers but the
 /// reference examples use them.
-pub fn ident_continue<T>(input: T) -> IResult<T, T>
+fn ident_continue<T>(input: T) -> IResult<T, T>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar,
 {
     input.split_at_position(|item| {
         let ch = item.as_char();
-        !(ch.is_xid_continue() || ch == '-' || ch == '.')
+        !(UnicodeXID::is_xid_continue(ch) || ch == '-' || ch == '.')
     })
 }
 
@@ -99,7 +92,7 @@ named!(pub identifier(CompleteStr) -> Identifier,
                         take!(1),
                         |s: CompleteStr| {
                             if let Some((_size, ref ch)) = s.char_indices().nth(0) {
-                                ch.is_xid_start() || ch == &'_'
+                                UnicodeXID::is_xid_start(*ch) || ch == &'_'
                             } else {
                                 false
                             }
