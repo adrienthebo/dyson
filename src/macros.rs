@@ -19,13 +19,13 @@ macro_rules! interrobang {
                 println!("<<<{:#?}>>>", remaining.0);
                 println!("-- ast:");
                 println!("{:#?}", ast);
-            },
+            }
             Err(ref e) => {
                 println!("Parse failed, error:");
                 println!("<<<\n{:#?}\n>>>", e);
             }
         }
-    }
+    };
 }
 
 /// Fully parse a string, but don't check the resulting AST.
@@ -33,7 +33,7 @@ macro_rules! interrobang {
 /// ```
 /// # #[macro_use] extern crate hcl_parser;
 ///
-/// use hcl_parser::parser::hcl2::parse;
+/// use hcl_parser::hcl2::parser::parse;
 ///
 /// fn main() {
 ///     let text =  "foo = true\n";
@@ -47,7 +47,7 @@ macro_rules! try_recognize {
         interrobang!($text, result);
         let (remaining, ast) = result.expect("Parse failure");
         assert!(remaining.is_empty());
-    }
+    };
 }
 
 /// Fully parse a string into a specific AST - or `panic` while trying.
@@ -55,8 +55,8 @@ macro_rules! try_recognize {
 /// ```
 /// # #[macro_use] extern crate hcl_parser;
 ///
-/// use hcl_parser::parser::hcl2::*;
-/// use hcl_parser::ast::*;
+/// use hcl_parser::hcl2::parser::*;
+/// use hcl_parser::hcl2::ast::*;
 ///
 /// fn main() {
 ///     let text = "foo = true\n";
@@ -80,5 +80,5 @@ macro_rules! try_parse_to {
         let (remaining, ast) = result.expect("Parse failure");
         assert!(remaining.is_empty());
         assert_eq!($expected, ast);
-    }
+    };
 }

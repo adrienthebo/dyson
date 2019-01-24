@@ -8,8 +8,7 @@ extern crate nom;
 extern crate serde_json;
 extern crate unicode_xid;
 
-pub mod ast;
-pub mod parser;
+pub mod hcl2;
 pub mod issues;
 
 #[macro_use]

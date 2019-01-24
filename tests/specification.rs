@@ -5,7 +5,7 @@
 extern crate hcl_parser;
 extern crate nom;
 
-use hcl_parser::parser::hcl2::parse;
+use hcl_parser::hcl2::parser::parse;
 use nom::types::CompleteStr;
 use std::fs::File;
 use std::io::prelude::*;

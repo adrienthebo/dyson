@@ -9,7 +9,7 @@ pub struct Error {
     id: u32,
 
 
-pub 'static 
+pub 'static
 */
 
 // TODO: look at how Henrik implemented issues in Puppet
@@ -18,7 +18,7 @@ pub enum ErrorCode {
     E00001 = 1,
     E00002 = 2,
     E00003 = 3,
-    E00004 = 4
+    E00004 = 4,
 }
 
 impl std::string::ToString for ErrorCode {

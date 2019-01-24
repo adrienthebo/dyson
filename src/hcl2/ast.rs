@@ -176,7 +176,7 @@ pub struct Attribute {
 #[derive(Debug, PartialEq, Clone)]
 pub enum BlockLabel {
     Identifier(Identifier),
-    StringLit(StringLit)
+    StringLit(StringLit),
 }
 
 /// Block Labels
@@ -219,7 +219,6 @@ pub enum ExprTerm {
     // ForExprs contain expressions so must be indirected to prevent overly
     // recursive type definitions.
     ForExpr(ForExpr),
-
     //ExprTerm Index,
     //ExprTerm GetAttr,
     //ExprTerm Splat,
@@ -353,22 +352,23 @@ impl TemplateExpr {
                     // And then extract the longest whitespace substring
                     .map(|l| l.chars().take_while(|ch| ch == &' ').collect::<Vec<char>>())
                     // And then return the shortest whitespace count
-                    .fold(s.len(), |acc, prefix| {
-                        ::std::cmp::min(acc, prefix.len())
-                    });
+                    .fold(s.len(), |acc, prefix| ::std::cmp::min(acc, prefix.len()));
 
-                let trimmed = s.split('\n')
+                let trimmed = s
+                    .split('\n')
                     .map(|line| {
                         if line.starts_with(' ') {
                             line[to_trim..].to_string()
                         } else {
                             line.to_string()
                         }
-                    }).collect::<Vec<String>>().join("\n");
+                    })
+                    .collect::<Vec<String>>()
+                    .join("\n");
 
                 TemplateExpr(trimmed)
-            },
-            false => TemplateExpr(s.to_string())
+            }
+            false => TemplateExpr(s.to_string()),
         }
     }
 }
@@ -385,7 +385,7 @@ pub struct ForCond(pub Box<Expression>);
 #[derive(Debug, PartialEq, Clone)]
 pub struct ForIntro {
     pub idents: (Identifier, Option<Identifier>),
-    pub expr: Box<Expression>
+    pub expr: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]

@@ -1,4 +1,4 @@
-use ast::*;
+use super::ast::*;
 use issues::*;
 use nom::types::CompleteStr;
 use nom::{AsChar, IResult, InputTakeAtPosition};
