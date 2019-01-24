@@ -33,7 +33,7 @@ macro_rules! interrobang {
 /// ```
 /// # #[macro_use] extern crate hcl_parser;
 ///
-/// use hcl_parser::parser::v2::parse;
+/// use hcl_parser::parser::hcl2::parse;
 ///
 /// fn main() {
 ///     let text =  "foo = true\n";
@@ -55,7 +55,7 @@ macro_rules! try_recognize {
 /// ```
 /// # #[macro_use] extern crate hcl_parser;
 ///
-/// use hcl_parser::parser::v2::*;
+/// use hcl_parser::parser::hcl2::*;
 /// use hcl_parser::ast::*;
 ///
 /// fn main() {

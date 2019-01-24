@@ -4,7 +4,7 @@ extern crate hcl_parser;
 extern crate pretty_assertions;
 
 use hcl_parser::ast::*;
-use hcl_parser::parser::v2::*;
+use hcl_parser::parser::hcl2::*;
 
 macro_rules! test_productions {
     ($testname:ident, $func:ident, $cases:expr) => {

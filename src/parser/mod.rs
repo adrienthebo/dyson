@@ -1,6 +1,6 @@
 //! HCL parsers.
 
-pub mod v2;
+pub mod hcl2;
 
 use ast;
 use nom;
