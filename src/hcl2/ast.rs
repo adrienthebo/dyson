@@ -13,7 +13,7 @@ impl fmt::Display for ParseAstError {
 
 impl Error for ParseAstError {
     fn description(&self) -> &str {
-        "Unable to parse HCL comment"
+        "Unable to parse HCL AST node"
     }
 }
 
